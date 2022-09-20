@@ -20,15 +20,15 @@ private:
 		}
 		if (current->data == value)
 		{
-			cout << value << "을(를) 찾았습니다." << endl;
+			cout << value << "has been found." << endl;
 			return current;
 		}
 		if (value < current->data)
 		{
-			cout << current->data << "에서 왼쪽으로 이동: ";
+			cout << current->data << "moved to left.";
 			return find_impl(current->left, value);
 		}
-		cout << current->data << "에서 오른쪽으로 이동: ";
+		cout << current->data << "moved to right.";
 		return find_impl(current->right, value);
 	}
 	void insert_impl(node *current, int value)
@@ -36,19 +36,16 @@ private:
 		if (value < current->data)
 		{
 			if (!current->left)
-			{
-				if (!current->left)
-					current->left = new node{value, NULL, NULL};
-				else
-					insert_impl(current->left, value);
-			}
+				current->left = new node{value, NULL, NULL};
 			else
-			{
-				if (!current->right)
-					current->right = new node{value, NULL, NULL};
-				else
-					insert_impl(current->right, value);
-			}
+				insert_impl(current->left, value);
+		}
+		else
+		{
+			if (!current->right)
+				current->right = new node{value, NULL, NULL};
+			else
+				insert_impl(current->right, value);
 		}
 	}
 	void inorder_impl(node *start)
@@ -132,17 +129,17 @@ int main()
 	tree.insert(4);
 	tree.insert(2);
 
-	cout << "중위 순회: ";
+	cout << "Inorder Traversal: ";
 	tree.inorder();
 	cout << endl;
 
 	tree.deleteValue(12);
-	cout << "12 삭제 후 중위 순회: ";
+	cout << "Delete 12 and Do Inorder Traversal: ";
 	tree.inorder();
 	cout << endl;
 
 	if (tree.find(12))
-		cout << "원소 12는 트리에 있습니다." << endl;
+		cout << "Value 12 is in the tree." << endl;
 	else
-		cout << "원소 12는 트리에 없습니다. " << endl;
+		cout << "Value 12 is not in the tree. " << endl;
 }
