@@ -1,3 +1,6 @@
+// 이 코드가 베스트라고 소개하는 거 아님
+// bst 클래스에 생성자 
+
 #include <iostream>
 using namespace std;
 
