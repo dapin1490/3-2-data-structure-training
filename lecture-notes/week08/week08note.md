@@ -26,4 +26,6 @@ E = {{a, b}, {b, c}, {c, a}}
 
 
 
-참고 : <https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/>
+참고  
+(1) <https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/>  
+(2) <https://www.programiz.com/dsa/graph-bfs>
