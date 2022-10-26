@@ -4,53 +4,57 @@
 #include <algorithm> // copy
 using namespace std;
 
-class accumulate_node { // ´©Àû ¹Î¿ø ³ëµå Å¬·¡½º
+class accumulate_node { // ëˆ„ì  ë¯¼ì› ë…¸ë“œ í´ë˜ìŠ¤
 private:
-	int waste_number; // ¾²·¹±â ºĞ·ù ¹øÈ£
-	int accmed_compls; // ´©Àû ¹Î¿ø ¼ö
-	vector<complain_node> compl_list; // ÇØ´ç ¹Î¿ø º¤ÅÍ
+	int waste_number; // ì“°ë ˆê¸° ë¶„ë¥˜ ë²ˆí˜¸
+	int accmed_compls; // ëˆ„ì  ë¯¼ì› ìˆ˜
+	vector<complain_node> compl_list; // í•´ë‹¹ ë¯¼ì› ë²¡í„°
 
 public:
-	/* »ı¼ºÀÚ´Â ÇÁ·Î±×·¥ Ã¹ ½ÇÇà ½Ã »ç¿ëÀÚÀÇ Á¶ÀÛ ¾øÀÌ ÀÚµ¿À¸·Î Á¤ÇØÁø ¼ö¸¸Å­ ½ÇÇàµÇ°Ô ÇÒ °Í.
-	¹Î¿øÀÌ ÇÏ³ªµµ µé¾î¿ÀÁö ¾ÊÀº »óÅÂ¸¦ ÀüÁ¦·Î ÇÑ´Ù. */
-	accumulate_node(int wn) {
-		waste_number = wn;
-		accmed_compls = 0;
-	}
+	/* ìƒì„±ìëŠ” í”„ë¡œê·¸ë¨ ì²« ì‹¤í–‰ ì‹œ ì‚¬ìš©ìì˜ ì¡°ì‘ ì—†ì´ ìë™ìœ¼ë¡œ ì •í•´ì§„ ìˆ˜ë§Œí¼ ì‹¤í–‰ë˜ê²Œ í•  ê²ƒ.
+	ë¯¼ì›ì´ í•˜ë‚˜ë„ ë“¤ì–´ì˜¤ì§€ ì•Šì€ ìƒíƒœë¥¼ ì „ì œë¡œ í•œë‹¤. */
+	accumulate_node(int wn);
 	/*
-	ÇÊ¿ä ¸Ş¼Òµå
-	+ ´©Àû ¹Î¿ø ¼ö º¯°æ ¸Ş¼Òµå
-	+ ¾²·¹±â ºĞ·ù ¹øÈ£ ¹İÈ¯ ¸Ş¼Òµå
-	+ ´©Àû ¹Î¿ø ¼ö ¹İÈ¯ ¸Ş¼Òµå
-	+ ¹Î¿ø º¤ÅÍ ¹İÈ¯ ¸Ş¼Òµå
+	í•„ìš” ë©”ì†Œë“œ
+	+ ëˆ„ì  ë¯¼ì› ìˆ˜ ë³€ê²½ ë©”ì†Œë“œ
+	+ ì“°ë ˆê¸° ë¶„ë¥˜ ë²ˆí˜¸ ë°˜í™˜ ë©”ì†Œë“œ
+	+ ëˆ„ì  ë¯¼ì› ìˆ˜ ë°˜í™˜ ë©”ì†Œë“œ
+	+ ë¯¼ì› ë²¡í„° ë°˜í™˜ ë©”ì†Œë“œ
 	*/
 };
 
-class complain_node { // ¹Î¿ø ³ëµå Å¬·¡½º
+class complain_node { // ë¯¼ì› ë…¸ë“œ í´ë˜ìŠ¤
 private:
-	string pic_name; // »çÁø ÆÄÀÏ¸í
-	pair<int, int> pic_size; // »çÁø Å©±â
-	pair<double, double> coordinates; // ÁÂÇ¥
-	int wastes[5]; // ¾²·¹±â À¯¹« Ç¥½Ã
+	string pic_name; // ì‚¬ì§„ íŒŒì¼ëª…
+	pair<int, int> pic_size; // ì‚¬ì§„ í¬ê¸°
+	pair<double, double> coordinates; // ì¢Œí‘œ
+	int wastes[5]; // ì“°ë ˆê¸° ìœ ë¬´ í‘œì‹œ
 
 public:
-	complain_node(string pn, int width, int height, double x, double y, int ws[5]) {
-		pic_name = pn;
-		pic_size = make_pair(width, height);
-		coordinates = make_pair(x, y);
-		copy(ws, ws + 5, wastes); // ¹è¿­ º¹»ç Âü°í : https://terrorjang.tistory.com/98
-	}
+	complain_node(string pn, int width, int height, double x, double y, int ws[5]);
 
 	/*
-	ÇÊ¿ä ¸Ş¼Òµå
-	+ °¢ ¸â¹ö º¯¼öº° °ªÀ» ¹İÈ¯ÇÏ´Â ¸Ş¼Òµåµé
-	+ ¾²·¹±â À¯¹« ¹è¿­ º¯°æ ¸Ş¼Òµå
+	í•„ìš” ë©”ì†Œë“œ
+	+ ê° ë©¤ë²„ ë³€ìˆ˜ë³„ ê°’ì„ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë“¤
+	+ ì“°ë ˆê¸° ìœ ë¬´ ë°°ì—´ ë³€ê²½ ë©”ì†Œë“œ
 	*/
 };
 
 int main() {
-	// ºü¸¥ ÀÔÃâ·Â
+	// ë¹ ë¥¸ ì…ì¶œë ¥
 	ios::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
 
 	return 0;
+}
+
+accumulate_node::accumulate_node(int wn) {
+	waste_number = wn;
+	accmed_compls = 0;
+}
+
+complain_node::complain_node(string pn, int width, int height, double x, double y, int ws[5]) {
+	pic_name = pn;
+	pic_size = make_pair(width, height);
+	coordinates = make_pair(x, y);
+	copy(ws, ws + 5, wastes); // ë°°ì—´ ë³µì‚¬ ì°¸ê³  : https://terrorjang.tistory.com/98
 }
