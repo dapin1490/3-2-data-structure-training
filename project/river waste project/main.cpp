@@ -1,76 +1,127 @@
 #include <iostream>
 #include <vector> // vector
 #include <utility> // pair
-#include <algorithm> // copy, sort(ì˜ˆì •)
+#include <algorithm> // copy, sort(¿¹Á¤)
+#include <map> // multimap Âü°í : https://blockdmask.tistory.com/88
 using namespace std;
 
-class complain_node { // ë¯¼ì› ë…¸ë“œ í´ë˜ìŠ¤
+class complain { // ¹Î¿ø Å¬·¡½º
 private:
-	string pic_name; // ì‚¬ì§„ íŒŒì¼ëª…
-	pair<int, int> pic_size; // ì‚¬ì§„ í¬ê¸°
-	pair<double, double> coordinates; // ì¢Œí‘œ
+	string pic_name; // »çÁø ÀÌ¸§(ÇÊ¿ä½Ã Àı´ë/»ó´ë ÆÄÀÏ °æ·Î Æ÷ÇÔ, »çÁø Å©±â¸¦ ºñ·ÔÇØ »çÁø ÆÄÀÏ ÀÚÃ¼¿¡ ´ëÇÑ °¢Á¾ Á¤º¸´Â ¿øº» ÆÄÀÏÀÇ Á¤º¸¿¡ Æ÷ÇÔµÈ´Ù°í º»´Ù)
+	int comp_date; // ¹Î¿ø ½Å°í ³¯Â¥
+	pair<double, double> coordinates; // »çÁø ÁÂÇ¥
+	int waste_cnt; // Æ÷ÇÔµÈ ¾²·¹±âÀÇ Á¾·ù ¼ö
 
 public:
-	int wastes[5]; // ì“°ë ˆê¸° ìœ ë¬´ í‘œì‹œ
+	int wastes[5]; // ¸â¹ö º¯¼öÁö¸¸ ¾îÂ÷ÇÇ getter¸¦ ½áµµ Æ÷ÀÎÅÍ·Î Àü´ŞµÇ¾î ¿øº» ¼öÁ¤ÀÌ °¡´ÉÇÏ´Ï public º¯¼ö·Î »ç¿ë
 
-	complain_node(string pn, int width, int height, double x, double y, int ws[5]);
+	complain(string pn, int cdate, double x, double y, int wcnt, int* ws);
+	complain(string pn, int cdate, double x, double y, int wcnt, string ws);
 
-	// ê° ë©¤ë²„ ë³€ìˆ˜ë³„ ê°’ì„ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë“¤
 	string get_name() { return pic_name; }
-	pair<int, int> get_size() { return pic_size; }
-	pair<int, int> get_codi() { return coordinates; }
+	int get_date() { return comp_date; }
+	pair<double, double> get_codi() { return coordinates; }
+	int get_wcnt() { return waste_cnt; }
+
+	void rename(string new_name) { pic_name = new_name; } // »çÁø ÀÌ¸§ º¯°æ
+	void update_wcnt(int num) { waste_cnt += num; }
+	void print_date() { cout << comp_date / 10000 << "³â " << comp_date % 10000 / 100 << "¿ù " << comp_date % 100 << "ÀÏ\n"; }
 };
 
-class accumulate_node { // ëˆ„ì  ë¯¼ì› ë…¸ë“œ í´ë˜ìŠ¤
+class accumed_compls { // ´©Àû ¹Î¿ø Å¬·¡½º
 private:
-	int waste_number; // ì“°ë ˆê¸° ë¶„ë¥˜ ë²ˆí˜¸
-	vector<complain_node> compl_list; // í•´ë‹¹ ë¯¼ì› ë²¡í„°
-
+	int waste_code; // ¾²·¹±â ºĞ·ù ¹øÈ£
+	vector<complain> compls; // ¾²·¹±â ºĞ·ù ¹øÈ£¿¡ µû¸¥ ÇØ´ç ¾²·¹±â °ü·Ã ¹Î¿ø º¤ÅÍ
 public:
-	/* ìƒì„±ìëŠ” í”„ë¡œê·¸ë¨ ì²« ì‹¤í–‰ ì‹œ ì‚¬ìš©ìì˜ ì¡°ì‘ ì—†ì´ ìë™ìœ¼ë¡œ ì •í•´ì§„ ìˆ˜ë§Œí¼ ì‹¤í–‰ë˜ê²Œ í•  ê²ƒ.
-	ë¯¼ì›ì´ í•˜ë‚˜ë„ ë“¤ì–´ì˜¤ì§€ ì•Šì€ ìƒíƒœë¥¼ ì „ì œë¡œ í•œë‹¤. */
-	accumulate_node(int wn);
+	accumed_compls() {};
+	accumed_compls(int wn); // »ı¼ºÀÚ
 
-	// ìƒˆ ë¯¼ì› ì¶”ê°€ë¨
-	void add_compl();
+	int get_num() { return waste_code; } // ¾²·¹±â ºĞ·ù ¹øÈ£ ¹İÈ¯
+	int get_compls_size() { return compls.size(); } // ¹Î¿ø ³ëµå º¤ÅÍ ±æÀÌ(´©Àû ¹Î¿ø ¼ö) ¹İÈ¯
 
-	// ëˆ„ì  ë¯¼ì› ì²˜ë¦¬
-	void clear_compl();
-
-	// ì“°ë ˆê¸° ë¶„ë¥˜ ë²ˆí˜¸ ë°˜í™˜
-	int get_wnum() { return waste_number; }
-
-	// ëˆ„ì  ë¯¼ì› ìˆ˜ ë°˜í™˜
-	int get_num_of_compls() { return compl_list.size(); }
-
-	// ë¯¼ì› ë²¡í„° ë°˜í™˜
-	vector<complain_node> get_compl_list() { return compl_list; }
+	void add_compl(complain new_comp) { compls.push_back(new_comp); } // ¹Î¿ø Ãß°¡
+	void clear_compls(); // ¹Î¿ø Ã³¸®(´©Àû ¹Î¿ø º¤ÅÍ¸¦ clearÇÏ¸ç, °³º° ¹Î¿ø Áß 2Á¾·ù ÀÌ»óÀÇ ¾²·¹±â°¡ Æ÷ÇÔµÈ ¹Î¿øÀÇ °æ¿ì ¾²·¹±â Æ÷ÇÔ Ç¥±â¸¦ ¼öÁ¤ÇÑ ÈÄ clearÇØ¾ß ÇÑ´Ù.)
 };
 
-class waste_system { // í•˜ì²œ ì“°ë ˆê¸° ë¯¼ì› ì²˜ë¦¬ ì‹œìŠ¤í…œ
+class compl_system { // ÇÏÃµ ¾²·¹±â ¹Î¿ø Ã³¸® ½Ã½ºÅÛ
 private:
-	accumulate_node acc_list[5]; // ëˆ„ì  ë¯¼ì› ê°ì²´ ë°°ì—´
-	int area; // ë‹´ë‹¹ ì§€ì—­ ë²ˆí˜¸(í–‰ì •ë™ì½”ë“œ ì‚¬ìš©, ì‚¬ìš©ìê°€ ì‹œìŠ¤í…œ ìƒì„± ì‹œ ì§ì ‘ ì…ë ¥)
-
-
+	int area_code; // Áö¿ª ÄÚµå(ÇàÁ¤µ¿/¹ıÁ¤µ¿ µîµî)
+	accumed_compls compls_list[5]; // ¾²·¹±â ºĞ·ùº° ´©Àû ¹Î¿ø ¹è¿­
+	
+	vector<complain> all_compls; // ÀüÃ¼ ¹Î¿ø º¤ÅÍ
+	multimap<string, complain> comp_map; // »çÁø ÀÌ¸§ ±âÁØ ÀüÃ¼ ¹Î¿ø ¸ÖÆ¼¸Ê
+	multimap<double, complain> longitude_map; // °æµµ ±âÁØ ÀüÃ¼ ¹Î¿ø ¸ÖÆ¼¸Ê
+	multimap<double, complain> latitude_map; // À§µµ ±âÁØ ÀüÃ¼ ¹Î¿ø ¸ÖÆ¼¸Ê
+	multimap<int, complain> cdate_map; // ¹Î¿ø Á¢¼ö ³¯Â¥ ±âÁØ ÀüÃ¼ ¹Î¿ø ¸ÖÆ¼¸Ê
 public:
-	// ìƒì„±ì ë“±ë“± ì¶”ê°€
+	compl_system(int area); // »ı¼ºÀÚ
+	void receive_compl(); // ¹Î¿ø Á¢¼ö
+	
+	void view_all(); // Á¤·Ä ±âÁØ(sort_by)¿¡ µû¸¥ ÀüÃ¼ ¹Î¿ø Á¶È¸(Ãâ·ÂÇÏ°Ô ÇÒ °ÍÀÌ¹Ç·Î ¹İÈ¯°ª ¾øÀ½)
+	void search_compl(); // °Ë»ö ±âÁØ(search_by)¿¡ µû¸¥ Æ¯Á¤ ¹Î¿ø °Ë»ö
+	
+	bool is_enough(int waste_code); // Æ¯Á¤ ºĞ·ùÀÇ ¾²·¹±â ¹Î¿øÀÌ ÃæºĞÈ÷ ¸¹¾Æ Ã³¸®ÇØµµ µÉ¸¸ÇÑÁö È®ÀÎ
+	void clear_compls(int waste_code); // Æ¯Á¤ ºĞ·ùÀÇ ¾²·¹±â °ü·Ã ¹Î¿ø ÀÏ°ı Ã³¸®
+	
+	void load_save(); // ÆÄÀÏ¿¡ ±â·ÏµÈ µ¥ÀÌÅÍ¸¦ ÅëÇÑ ÀÌÀü ¾÷¹« ±â·Ï ·Îµå. ¸Å¹ø »õ ½Ã½ºÅÛÀ» »ı¼ºÇÒ ¼ö´Â ¾øÀ¸´Ï±î.
+	void save_task(); // ¾÷¹« ÁøÇà »óÈ²À» ÆÄÀÏ·Î ±â·Ï. ¾÷¹«¸¦ Á¾·áÇÏ°Å³ª Áß°£ ÀúÀåÀÌ ÇÊ¿äÇÒ ¶§ ½ÇÇà.
 };
 
 int main() {
-	// ë¹ ë¥¸ ì…ì¶œë ¥
+	// ºü¸¥ ÀÔÃâ·Â
 	ios::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
 
 	return 0;
 }
 
-accumulate_node::accumulate_node(int wn) {
-	waste_number = wn;
+complain::complain(string pn, int cdate, double x, double y, int wcnt, int* ws) {
+	pic_name = pn;
+	comp_date = cdate;
+	coordinates = make_pair(x, y);
+	waste_cnt = wcnt;
+	copy(ws, ws + 5, wastes); // ¹è¿­ º¹»ç Âü°í : https://terrorjang.tistory.com/98
 }
 
-complain_node::complain_node(string pn, int width, int height, double x, double y, int ws[5]) {
+complain::complain(string pn, int cdate, double x, double y, int wcnt, string ws) {
 	pic_name = pn;
-	pic_size = make_pair(width, height);
+	comp_date = cdate;
 	coordinates = make_pair(x, y);
-	copy(ws, ws + 5, wastes); // ë°°ì—´ ë³µì‚¬ ì°¸ê³  : https://terrorjang.tistory.com/98
+	waste_cnt = wcnt;
+	
+	for (int i = 0; i < 5; i++) {
+		switch (ws.at(i)) {
+		case '0':
+			wastes[i] = 0;
+			break;
+		case '1':
+			wastes[i] = 1;
+			break;
+		defalut:
+			wastes[i] = NULL;
+		}
+	}
+}
+
+accumed_compls::accumed_compls(int wn) {
+	waste_code = wn;
+}
+
+void accumed_compls::clear_compls() { // ¹Î¿ø Ã³¸®(´©Àû ¹Î¿ø º¤ÅÍ¸¦ clearÇÏ¸ç, °³º° ¹Î¿ø Áß 2Á¾·ù ÀÌ»óÀÇ ¾²·¹±â°¡ Æ÷ÇÔµÈ ¹Î¿øÀÇ °æ¿ì ¾²·¹±â Æ÷ÇÔ Ç¥±â¸¦ ¼öÁ¤ÇÑ ÈÄ clearÇØ¾ß ÇÑ´Ù.)
+	vector<complain>::iterator i;
+
+	for (i = compls.begin(); i != compls.end(); i++) {
+		if ((*i).get_wcnt() > 1) {
+			(*i).update_wcnt(-1);
+			(*i).wastes[waste_code] = 0;
+		}
+	}
+
+	compls.clear();
+}
+
+compl_system::compl_system(int area) {
+	area_code = area;
+	for (int i = 0; i < 5; i++) {
+		compls_list[i] = accumed_compls(i);
+	}
 }

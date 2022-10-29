@@ -74,4 +74,12 @@
 지역 코드를 이용해 각 지역의 시스템을 분리하도록 구상했다. 그리고 출퇴근도 전제했으니, 프로그램이 시작될 때 지역 코드를 입력하면 해당 코드로 생성된 기록이 있는지 파악하여 이전의 기록을 로드하거나, 없다면 새로 만들도록 하고 싶다. 이 목록은 저장소 내에 지역 코드로 생성된 로그 파일이 있는지 검사하기만 하는 것으로 대체될 수 있다.
   
 ### 민원 처리 시스템 업무 기록
-내 프로젝트의 주요 사용 대상은 공무원이다. 공무원은 출퇴근을 한다. 퇴근할 때는 컴퓨터를 끄고 가야 한다. 고로 프로그램이 실행 중 저장되고 변경된 데이터는 컴퓨터가 종료되어도 남을 수 있도록 어딘가에 기록되어야 한다. 세이브 파일을 만든다는 말이다.
+내 프로젝트의 주요 사용 대상은 공무원이다. 공무원은 출퇴근을 한다. 퇴근할 때는 컴퓨터를 끄고 가야 한다. 고로 프로그램이 실행 중 저장되고 변경된 데이터는 컴퓨터가 종료되어도 남을 수 있도록 어딘가에 기록되어야 한다. 세이브 파일을 만든다는 말이다.  
+  
+### 단위 테스트, TDD 배우기
+참고  
+- [Visual Studio에서 C/C++에 대한 단위 테스트 작성](https://learn.microsoft.com/ko-kr/visualstudio/test/writing-unit-tests-for-c-cpp?view=vs-2022)
+- [Visual Studio에서 Microsoft Unit Testing Framework for C++ 사용](https://learn.microsoft.com/ko-kr/visualstudio/test/how-to-use-microsoft-test-framework-for-cpp?source=recommendations&view=vs-2022)
+- [Microsoft.VisualStudio.TestTools.CppUnitTestFramework API 참조](https://learn.microsoft.com/ko-kr/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference?view=vs-2022)
+- [C++ 배열의 값이 전부 같은지 확인하는 방법 (std::equal)](https://torbjorn.tistory.com/357)
+- [C++ 유닛 (단위) 테스트 쉽게 써보기](https://m.post.naver.com/viewer/postView.naver?volumeNo=16995308&memberNo=559061)
