@@ -1,0 +1,235 @@
+실행 시간 : 2022-11-07 00:33:11
+
+----------
+Station : 0
+Search by BFS
+
+Node #0 : 0
+Node #1 : 1
+Node #2 : 1
+Node #3 : 2
+Node #4 : 2
+Node #5 : 3
+Node #6 : 3
+Node #7 : 3
+Node #8 : 4
+Node #9 : 4
+----------
+----------
+Station : 3
+Search by BFS
+
+Node #0 : 2
+Node #1 : 1
+Node #2 : 1
+Node #3 : 0
+Node #4 : 1
+Node #5 : 2
+Node #6 : 2
+Node #7 : 2
+Node #8 : 3
+Node #9 : 3
+----------
+----------
+Stations : 0  3  
+Search by BFS
+
+Node #0 : 0
+Node #1 : 1
+Node #2 : 1
+Node #3 : 0
+Node #4 : 1
+Node #5 : 2
+Node #6 : 2
+Node #7 : 2
+Node #8 : 3
+Node #9 : 3
+----------
+----------
+Stations : 0  3  8  
+Search by BFS
+
+Node #0 : 0
+Node #1 : 1
+Node #2 : 1
+Node #3 : 0
+Node #4 : 1
+Node #5 : 1
+Node #6 : 2
+Node #7 : 1
+Node #8 : 0
+Node #9 : 2
+----------
+----------
+Station : 0
+Search by DFS(iteration)
+
+visit : 0
+visit : 2
+visit : 3
+visit : 4
+visit : 7
+visit : 8
+visit : 5
+visit : 9
+visit : 6
+visit : 1
+Node #0 : 0
+Node #1 : 4
+Node #2 : 1
+Node #3 : 2
+Node #4 : 3
+Node #5 : 6
+Node #6 : 5
+Node #7 : 4
+Node #8 : 5
+Node #9 : 7
+----------
+----------
+Station : 3
+Search by DFS(iteration)
+
+visit : 3
+visit : 4
+visit : 7
+visit : 8
+visit : 5
+visit : 9
+visit : 6
+visit : 1
+visit : 2
+visit : 0
+Node #0 : 4
+Node #1 : 2
+Node #2 : 3
+Node #3 : 0
+Node #4 : 1
+Node #5 : 4
+Node #6 : 3
+Node #7 : 2
+Node #8 : 3
+Node #9 : 5
+----------
+----------
+Stations : 0  3  
+Search by DFS(iteration)
+
+visit : 0
+visit : 3
+visit : 4
+visit : 7
+visit : 8
+visit : 5
+visit : 9
+visit : 6
+visit : 1
+visit : 2
+Node #0 : 0
+Node #1 : 2
+Node #2 : 3
+Node #3 : 0
+Node #4 : 1
+Node #5 : 4
+Node #6 : 3
+Node #7 : 2
+Node #8 : 3
+Node #9 : 5
+----------
+----------
+Stations : 0  3  8  
+Search by DFS(iteration)
+
+visit : 0
+visit : 3
+visit : 8
+visit : 7
+visit : 6
+visit : 4
+visit : 5
+visit : 9
+visit : 1
+visit : 2
+Node #0 : 0
+Node #1 : 4
+Node #2 : 5
+Node #3 : 0
+Node #4 : 3
+Node #5 : 4
+Node #6 : 2
+Node #7 : 1
+Node #8 : 0
+Node #9 : 5
+----------
+Station : 0
+Search by DFS(recursion)
+
+visit : 0
+visit : 1
+visit : 2
+visit : 3
+visit : 4
+visit : 5
+visit : 7
+visit : 6
+visit : 8
+visit : 9
+Node #0 : 0
+Node #1 : 1
+Node #2 : 2
+Node #3 : 3
+Node #4 : 4
+Node #5 : 5
+Node #6 : 7
+Node #7 : 6
+Node #8 : 7
+Node #9 : 6
+----------
+Station : 0 3 
+Search by DFS(recursion)
+
+visit : 0
+visit : 3
+visit : 1
+visit : 2
+visit : 4
+visit : 5
+visit : 7
+visit : 6
+visit : 8
+visit : 9
+Node #0 : 0
+Node #1 : 1
+Node #2 : 2
+Node #3 : 0
+Node #4 : 2
+Node #5 : 3
+Node #6 : 5
+Node #7 : 4
+Node #8 : 5
+Node #9 : 4
+----------
+----------
+Station : 0 3 8 
+Search by DFS(recursion)
+
+visit : 0
+visit : 3
+visit : 8
+visit : 1
+visit : 2
+visit : 4
+visit : 5
+visit : 7
+visit : 6
+visit : 9
+Node #0 : 0
+Node #1 : 1
+Node #2 : 2
+Node #3 : 0
+Node #4 : 2
+Node #5 : 3
+Node #6 : 5
+Node #7 : 4
+Node #8 : 0
+Node #9 : 4
+----------
