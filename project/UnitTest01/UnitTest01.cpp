@@ -2,6 +2,7 @@
 #include "CppUnitTest.h"
 #include "../river waste project/main.cpp"
 #include <algorithm>
+#include "../river waste project/compl_system.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -18,6 +19,7 @@ namespace UnitTest01
 			TEST_METHOD_INITIALIZE는 테스트 클래스에서 한 번만 정의할 수 있으며
 			테스트 클래스의 범위에서 정의해야 합니다.
 			*/
+			output << "유닛 테스트 실행 시각 : " << currentDateTime() << "\n\n";
 		}
 
 		TEST_METHOD_CLEANUP(Cleanup)
@@ -37,7 +39,7 @@ namespace UnitTest01
 			complain c1 = complain("test.jpg", 20221029, 37.42, 126.79, 2, ws);
 			complain c2 = complain("test2.jpg", 20221029, 37.42, 126.8, 2, "11000");
 			accumed_compls a1 = accumed_compls(0);
-			compl_system s1 = compl_system(11000);
+			compl_system s1 = compl_system("11000");
 
 			Assert::AreEqual(20221029, c1.get_date());
 			Assert::AreEqual(true, std::equal(ws, ws + 5, c1.wastes, c1.wastes + 5));
@@ -48,8 +50,13 @@ namespace UnitTest01
 
 		TEST_METHOD(SystemOnTest)
 		{
-			// test 2: 시스템 실행 시 지역코드 입력 후 파일 확인
+			// test 2: 시스템 실행 시 지역코드 입력 후 파일 확인 : 입출력이 안 돼서 테스트 진행 불가
+			compl_system s1;
+			s1.system_on();
 
+			string correct_code = "1111000000";
+			string code = s1.get_acode();
+			//Assert::AreEqual(correct_code, code);
 		}
 	};
 }
