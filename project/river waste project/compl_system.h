@@ -14,8 +14,8 @@ using namespace std;
 
 // 행정동코드 출처 : https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000052&nttId=94196
 
-const string intxt = "../river waste project/data/input.txt";
-const string outtxt = "../river waste project/data/output.txt";
+const string intxt = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/input.txt";
+const string outtxt = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/output.txt";
 
 extern ifstream input{ intxt };
 extern ofstream output{ outtxt };
@@ -169,7 +169,7 @@ public:
 		output << "입력된 지역번호는 " << areacode << "입니다.\n";
 
 		this->area_code = areacode;
-		file_route = "data/" + areacode + ".csv";
+		file_route = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/" + areacode + ".csv";
 		is_file_valuable = _access(file_route.c_str(), 0) != -1;
 
 		if (is_file_valuable) { // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
