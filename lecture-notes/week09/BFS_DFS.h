@@ -5,24 +5,31 @@
 #include <vector>
 #include <fstream>
 #include <stack>
+#include <string>
 using namespace std;
 
+const string in_file_route = "res/example_input.txt";
+const string out_file_route = "res/example_output.txt";
+
+extern ifstream input_file{ in_file_route };
+extern ofstream output_file{ out_file_route };
+
 struct Node {
-	int to_station = INFINITY; // °¡Àå °¡±î¿î station±îÁöÀÇ °Å¸®
-	vector<int> adj; // ÀÎÁ¢ ³ëµå
-	vector<int> d; // °¢ ÀÎÁ¢ ³ëµå±îÁöÀÇ °Å¸®
+	int to_station = INFINITY; // ê°€ì¥ ê°€ê¹Œìš´ stationê¹Œì§€ì˜ ê±°ë¦¬
+	vector<int> adj; // ì¸ì ‘ ë…¸ë“œ
+	vector<int> d; // ê° ì¸ì ‘ ë…¸ë“œê¹Œì§€ì˜ ê±°ë¦¬
 };
 
 class Graph {
 private:
-	int vertices; // Á¡ ¼ö
-	vector<Node> graph; // °¢ ³ëµåÀÇ Å°°ªÀº º¤ÅÍÀÇ ÀÎµ¦½º·Î ´ëÃ¼
-	vector<bool> visited; // ¹æ¹® ¿©ºÎ
+	int vertices; // ì •ì  ìˆ˜
+	vector<Node> graph; // ê° ë…¸ë“œì˜ í‚¤ê°’ì€ ë²¡í„°ì˜ ì¸ë±ìŠ¤ë¡œ ëŒ€ì²´
+	vector<bool> visited; // ë°©ë¬¸ ì—¬ë¶€
 
 	void print_route();
 
 public:
-	Graph(int vts); // »ı¼ºÀÚ
+	Graph(int vts); // ìƒì„±ì
 
 	void add_undir_edge(int key1, int key2, int d = 1);
 	void add_dir_edge(int from, int to, int d = 1);
@@ -33,17 +40,13 @@ public:
 	void DFS_by_iteration(int start_key);
 	void DFS_by_iteration(vector<int> starts);
 
+	void DFS_to_destination(int start, int dest);
+
 	void DFS_by_recursion(int start_key, bool is_start = true);
 	void DFS_by_recursion(vector<int> starts, bool is_start = true);
 };
 
-const string in_file_route = "res/example_input.txt";
-const string out_file_route = "res/example_output.txt";
-
-extern ifstream input_file{ in_file_route };
-extern ofstream output_file{ out_file_route };
-
-Graph::Graph(int vts) { // »ı¼ºÀÚ
+Graph::Graph(int vts) { // ìƒì„±ì
 	vertices = vts;
 	graph.resize(vts);
 	visited.resize(vts, false);
@@ -70,33 +73,33 @@ void Graph::print_route() {
 	}
 }
 
-void Graph::BFS(int start_key) { // ·çÆ®(½ÃÀÛÁ¡)¿¡¼­ ½ÃÀÛ
-	graph[start_key].to_station = 0; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0
-	visited[start_key] = true; // ¹æ¹® Ç¥½Ã ÈÄ
+void Graph::BFS(int start_key) { // ë£¨íŠ¸(ì‹œì‘ì )ì—ì„œ ì‹œì‘
+	graph[start_key].to_station = 0; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0
+	visited[start_key] = true; // ë°©ë¬¸ í‘œì‹œ í›„
 	queue<int> que;
-	que.push(start_key); // Å¥¿¡ push
+	que.push(start_key); // íì— push
 
 	output_file << "----------\nStation : " << start_key << "\nSearch by BFS\n\n";
 
-	while (!que.empty()) { // Å¥°¡ ºñ¾îÀÖÀ» ¶§±îÁö
-		start_key = que.front(); // Å¥¿¡¼­ ÇÏ³ª pop
+	while (!que.empty()) { // íê°€ ë¹„ì–´ìˆì„ ë•Œê¹Œì§€
+		start_key = que.front(); // íì—ì„œ í•˜ë‚˜ pop
 		que.pop();
 
 		int len = graph[start_key].adj.size();
-		for (int i = 0; i < len; i++) { // ¹æ±İ popÇÑ ³ëµåÀÇ ÀÎÁ¢ÇÑ ³ëµå¿¡ ´ëÇØ ¹æ¹®ÇÏÁö ¾ÊÀº °Í¿¡ ÇÑÇØ Å¥¿¡ push
+		for (int i = 0; i < len; i++) { // ë°©ê¸ˆ popí•œ ë…¸ë“œì˜ ì¸ì ‘í•œ ë…¸ë“œì— ëŒ€í•´ ë°©ë¬¸í•˜ì§€ ì•Šì€ ê²ƒì— í•œí•´ íì— push
 			int current = graph[start_key].adj[i];
 			if (!visited[current]) {
 				visited[current] = true;
 				que.push(current);
-				graph[current].to_station = graph[start_key].to_station + 1; // Áö±İ ¹æ¹®ÇÑ °÷Àº stationÀ¸·ÎºÎÅÍ ÇöÀçÀÇ ±âÁØÁ¡º¸´Ù 1¸¸Å­ ´õ ¶³¾îÁ® ÀÖÀ½
+				graph[current].to_station = graph[start_key].to_station + 1; // ì§€ê¸ˆ ë°©ë¬¸í•œ ê³³ì€ stationìœ¼ë¡œë¶€í„° í˜„ì¬ì˜ ê¸°ì¤€ì ë³´ë‹¤ 1ë§Œí¼ ë” ë–¨ì–´ì ¸ ìˆìŒ
 			}
 		}
 	}
 
-	// Å½»öÀ» ³¡³½ ÈÄ ¹æ¹® ¿©ºÎ Ç¥½Ã¸¦ ¸ğµÎ Áö¿ò
+	// íƒìƒ‰ì„ ëë‚¸ í›„ ë°©ë¬¸ ì—¬ë¶€ í‘œì‹œë¥¼ ëª¨ë‘ ì§€ì›€
 	visited.assign(vertices, false);
 
-	// Å½»ö °á°ú Ãâ·Â
+	// íƒìƒ‰ ê²°ê³¼ ì¶œë ¥
 	this->print_route();
 	output_file << "----------\n";
 }
@@ -108,7 +111,7 @@ void Graph::BFS(vector<int> starts) {
 
 	output_file << "----------\nStations : ";
 	for (iter = starts.begin(); iter != starts.end(); iter++) {
-		graph[*iter].to_station = 0; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0
+		graph[*iter].to_station = 0; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0
 		visited[*iter] = true;
 		que.push(*iter);
 		output_file << *iter << "  ";
@@ -120,29 +123,29 @@ void Graph::BFS(vector<int> starts) {
 		que.pop();
 
 		int len = graph[vert].adj.size();
-		for (int i = 0; i < len; i++) { // ¹æ±İ popÇÑ ³ëµåÀÇ ÀÎÁ¢ÇÑ ³ëµå¿¡ ´ëÇØ ¹æ¹®ÇÏÁö ¾ÊÀº °Í¿¡ ÇÑÇØ Å¥¿¡ push
+		for (int i = 0; i < len; i++) { // ë°©ê¸ˆ popí•œ ë…¸ë“œì˜ ì¸ì ‘í•œ ë…¸ë“œì— ëŒ€í•´ ë°©ë¬¸í•˜ì§€ ì•Šì€ ê²ƒì— í•œí•´ íì— push
 			int current = graph[vert].adj[i];
 			if (!visited[current]) {
 				visited[current] = true;
 				que.push(current);
-				graph[current].to_station = graph[vert].to_station + 1; // Áö±İ ¹æ¹®ÇÑ °÷Àº stationÀ¸·ÎºÎÅÍ ÇöÀçÀÇ ±âÁØÁ¡º¸´Ù 1¸¸Å­ ´õ ¶³¾îÁ® ÀÖÀ½
+				graph[current].to_station = graph[vert].to_station + 1; // ì§€ê¸ˆ ë°©ë¬¸í•œ ê³³ì€ stationìœ¼ë¡œë¶€í„° í˜„ì¬ì˜ ê¸°ì¤€ì ë³´ë‹¤ 1ë§Œí¼ ë” ë–¨ì–´ì ¸ ìˆìŒ
 			}
 		}
 	}
 
-	// Å½»öÀ» ³¡³½ ÈÄ ¹æ¹® ¿©ºÎ Ç¥½Ã¸¦ ¸ğµÎ Áö¿ò
+	// íƒìƒ‰ì„ ëë‚¸ í›„ ë°©ë¬¸ ì—¬ë¶€ í‘œì‹œë¥¼ ëª¨ë‘ ì§€ì›€
 	visited.assign(vertices, false);
 
-	// Å½»ö °á°ú Ãâ·Â
+	// íƒìƒ‰ ê²°ê³¼ ì¶œë ¥
 	this->print_route();
 	output_file << "----------\n";
 }
 
-void Graph::DFS_by_iteration(int start_key) { // ·çÆ®(½ÃÀÛÁ¡)¿¡¼­ ½ÃÀÛ
-	stack<pair<int, int>> s; // first´Â ¹æ¹®ÇØ¾ß ÇÒ ³ëµå, second´Â Á÷Àü¿¡ ¹æ¹®ÇÑ ³ëµå
+void Graph::DFS_by_iteration(int start_key) { // ë£¨íŠ¸(ì‹œì‘ì )ì—ì„œ ì‹œì‘
+	stack<pair<int, int>> s; // firstëŠ” ë°©ë¬¸í•´ì•¼ í•  ë…¸ë“œ, secondëŠ” ì§ì „ì— ë°©ë¬¸í•œ ë…¸ë“œ
 
 	s.emplace(start_key, start_key);
-	graph[start_key].to_station = -1; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0ÀÎµ¥, ÀıÂ÷»ó while ¾È¿¡¼­ ÇÑ¹ø ¹æ¹®ÇÏ°í +1À» ÇØ¾ß ÇÏ±â ¶§¹®¿¡ -1·Î ÃÊ±âÈ­
+	graph[start_key].to_station = -1; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0ì¸ë°, ì ˆì°¨ìƒ while ì•ˆì—ì„œ í•œë²ˆ ë°©ë¬¸í•˜ê³  +1ì„ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— -1ë¡œ ì´ˆê¸°í™”
 
 	output_file << "----------\nStation : " << start_key << "\nSearch by DFS(iteration)\n\n";
 
@@ -161,22 +164,22 @@ void Graph::DFS_by_iteration(int start_key) { // ·çÆ®(½ÃÀÛÁ¡)¿¡¼­ ½ÃÀÛ
 		}
 	}
 
-	// Å½»öÀ» ³¡³½ ÈÄ ¹æ¹® ¿©ºÎ Ç¥½Ã¸¦ ¸ğµÎ Áö¿ò
+	// íƒìƒ‰ì„ ëë‚¸ í›„ ë°©ë¬¸ ì—¬ë¶€ í‘œì‹œë¥¼ ëª¨ë‘ ì§€ì›€
 	visited.assign(vertices, false);
 
-	// Å½»ö °á°ú Ãâ·Â
+	// íƒìƒ‰ ê²°ê³¼ ì¶œë ¥
 	this->print_route();
 	output_file << "----------\n";
 }
 
 void Graph::DFS_by_iteration(vector<int> starts) {
-	stack<pair<int, int>> s; // first´Â ¹æ¹®ÇØ¾ß ÇÒ ³ëµå, second´Â Á÷Àü¿¡ ¹æ¹®ÇÑ ³ëµå
+	stack<pair<int, int>> s; // firstëŠ” ë°©ë¬¸í•´ì•¼ í•  ë…¸ë“œ, secondëŠ” ì§ì „ì— ë°©ë¬¸í•œ ë…¸ë“œ
 	vector<int>::iterator i;
 
 	output_file << "----------\nStations : ";
 	for (i = starts.begin(); i != starts.end(); i++) {
 		s.emplace(*i, *i);
-		graph[*i].to_station = 0; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0
+		graph[*i].to_station = 0; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0
 		visited[*i] = true;
 		output_file << *i << "  ";
 	}
@@ -207,10 +210,54 @@ void Graph::DFS_by_iteration(vector<int> starts) {
 		}
 	}
 
-	// Å½»öÀ» ³¡³½ ÈÄ ¹æ¹® ¿©ºÎ Ç¥½Ã¸¦ ¸ğµÎ Áö¿ò
+	// íƒìƒ‰ì„ ëë‚¸ í›„ ë°©ë¬¸ ì—¬ë¶€ í‘œì‹œë¥¼ ëª¨ë‘ ì§€ì›€
 	visited.assign(vertices, false);
 
-	// Å½»ö °á°ú Ãâ·Â
+	// íƒìƒ‰ ê²°ê³¼ ì¶œë ¥
+	this->print_route();
+	output_file << "----------\n";
+}
+
+void Graph::DFS_to_destination(int start, int dest) { // ë£¨íŠ¸(ì‹œì‘ì )ì—ì„œ ì‹œì‘
+	stack<pair<int, int>> s; // firstëŠ” ë°©ë¬¸í•´ì•¼ í•  ë…¸ë“œ, secondëŠ” ì§ì „ì— ë°©ë¬¸í•œ ë…¸ë“œ
+
+	s.emplace(start, start);
+	graph[start].to_station = -1; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0ì¸ë°, ì ˆì°¨ìƒ while ì•ˆì—ì„œ í•œë²ˆ ë°©ë¬¸í•˜ê³  +1ì„ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— -1ë¡œ ì´ˆê¸°í™”
+
+	output_file << "----------\nStation : " << start << "\nSearch by DFS to destination\n\n";
+
+	while (!s.empty()) {
+		pair<int, int> curr = s.top();
+		s.pop();
+
+		if (curr.first == dest) {
+			string path;
+			
+			output_file << "found destination\n";
+			while (!s.empty()) {
+				pair<int, int> point = s.top();
+				s.pop();
+				path = to_string(point.first) + " " + path;
+			}
+			output_file << "path : " << path << "\n\n";
+			return;
+		}
+
+		if (!visited[curr.first]) {
+			visited[curr.first] = true;
+			graph[curr.first].to_station = graph[curr.second].to_station + 1;
+			output_file << "visit : " << curr.first << "\n";
+
+			for (vector<int>::iterator i = graph[curr.first].adj.begin(); i != graph[curr.first].adj.end(); i++) {
+				s.emplace(*i, curr.first);
+			}
+		}
+	}
+
+	// íƒìƒ‰ì„ ëë‚¸ í›„ ë°©ë¬¸ ì—¬ë¶€ í‘œì‹œë¥¼ ëª¨ë‘ ì§€ì›€
+	visited.assign(vertices, false);
+
+	// íƒìƒ‰ ê²°ê³¼ ì¶œë ¥
 	this->print_route();
 	output_file << "----------\n";
 }
@@ -220,8 +267,8 @@ void Graph::DFS_by_recursion(int start_key, bool is_start) {
 
 	if (is_start) {
 		output_file << "Station : " << start_key << "\nSearch by DFS(recursion)\n\n";
-		graph[start_key].to_station = 0; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0
-		visited[start_key] = true; // ¹æ¹® Ç¥½Ã
+		graph[start_key].to_station = 0; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0
+		visited[start_key] = true; // ë°©ë¬¸ í‘œì‹œ
 		output_file << "visit : " << start_key << "\n";
 	}
 
@@ -251,7 +298,7 @@ void Graph::DFS_by_recursion(vector<int> starts, bool is_start) {
 		output_file << "\nSearch by DFS(recursion)\n\n";
 
 		for (vector<int>::iterator i = starts.begin(); i != starts.end(); i++) {
-			graph[*i].to_station = 0; // ½ÃÀÛÁ¡Àº stationÀÌ¹Ç·Î station±îÁöÀÇ °Å¸®°¡ 0
+			graph[*i].to_station = 0; // ì‹œì‘ì ì€ stationì´ë¯€ë¡œ stationê¹Œì§€ì˜ ê±°ë¦¬ê°€ 0
 			visited[*i] = true;
 			output_file << "visit : " << *i << "\n";
 		}
