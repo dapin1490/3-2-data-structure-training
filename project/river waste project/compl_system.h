@@ -56,7 +56,9 @@ void error(int error_code) {
 class complain { // 민원 클래스
 private:
 	string pic_name; // 사진 이름(필요시 절대/상대 파일 경로 포함, 사진 크기를 비롯해 사진 파일 자체에 대한 각종 정보는 원본 파일의 정보에 포함된다고 본다)
-	int comp_date; // 민원 신고 날짜
+	time_t rawtime; // 민원 신고 날짜(time_t)
+	tm comp_date; // 민원 신고 날짜(tm)
+	errno_t is_valid_date; // 민원 신고 날짜가 오류 없이 저장돼있는지
 	pair<double, double> coordinates; // 사진 좌표
 	int waste_cnt; // 포함된 쓰레기의 종류 수
 public:
@@ -64,15 +66,33 @@ public:
 
 public:
 	complain(string pn, int cdate, double x, double y, int wcnt, int* ws) {
+		// 참고 : https://cplusplus.com/reference/ctime/mktime/
+		// 참고 : https://www.it-note.kr/143
+		rawtime = time(&rawtime);
+		is_valid_date = localtime_s(&comp_date, &rawtime);
+		comp_date.tm_year = cdate / 10000 - 1900;
+		comp_date.tm_mon = cdate % 10000 / 100 - 1;
+		comp_date.tm_mday = cdate % 100;
+		rawtime = mktime(&comp_date);
+
 		pic_name = pn;
-		comp_date = cdate;
 		coordinates = make_pair(x, y);
 		waste_cnt = wcnt;
 		copy(ws, ws + 5, wastes); // 배열 복사 참고 : https://terrorjang.tistory.com/98
+		
+		print();
 	}
 	complain(string pn, int cdate, double x, double y, int wcnt, string ws) {
+		// 참고 : https://cplusplus.com/reference/ctime/mktime/
+		// 참고 : https://www.it-note.kr/143
+		time_t rawtime = time(&rawtime);
+		errno_t is_error = localtime_s(&comp_date, &rawtime);
+		comp_date.tm_year = cdate / 10000 - 1900;
+		comp_date.tm_mon = cdate % 10000 / 100 - 1;
+		comp_date.tm_mday = cdate % 100;
+		rawtime = mktime(&comp_date);
+		
 		pic_name = pn;
-		comp_date = cdate;
 		coordinates = make_pair(x, y);
 		waste_cnt = wcnt;
 
@@ -88,17 +108,36 @@ public:
 				wastes[i] = NULL;
 			}
 		}
+
+		print();
 	}
 
 	string get_name() { return pic_name; } // 사진 이름 반환
-	int get_date() { return comp_date; } // 민원 신고 날짜 반환
+	time_t get_date() { return rawtime; } // 민원 신고 날짜 반환
 	pair<double, double> get_codi() { return coordinates; } // 사진 좌표 반환(pair)
 	int get_wcnt() { return waste_cnt; } // 포함 쓰레기 종류 수 반환
 
 	void rename(string new_name) { pic_name = new_name; } // 사진 이름 변경
 	void update_wcnt(int num) { waste_cnt += num; } // 포함 쓰레기 종류 수 변경
-	// 민원 신고 날짜 출력
-	void print_date() { output << comp_date / 10000 << "년 " << comp_date % 10000 / 100 << "월 " << comp_date % 100 << "일\n"; }
+	// 민원 정보 출력
+	void print() {
+		output << "민원 파일명 : \"" << pic_name << "\"\n";
+		if (is_valid_date == 0) {
+			char buffer[256];
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &comp_date);
+			output << "신고 일자 : " << buffer << "\n";
+		}
+		else {
+			output << "신고 일자 : 얻을 수 없음\n";
+		}
+		output << "신고 좌표 : (" << coordinates.first << ", " << coordinates.second << ")\n";
+		output << "포함 쓰레기 종류 수 : " << waste_cnt << "\n";
+		output << "일반 " << (wastes[0] == 0 ? 'X' : 'O')
+			<< "   플라스틱 " << (wastes[1] == 0 ? 'X' : 'O')
+			<< "   캔 " << (wastes[2] == 0 ? 'X' : 'O')
+			<< "   유리 " << (wastes[3] == 0 ? 'X' : 'O')
+			<< "   종이 " << (wastes[4] == 0 ? 'X' : 'O') << "\n\n";
+	}
 };
 
 class accumed_compls { // 누적 민원 클래스
@@ -144,8 +183,8 @@ private:
 	multimap<string, complain*> comp_map; // 사진 이름 기준 전체 민원 멀티맵
 	multimap<double, complain*> latitude_map; // 위도 기준 전체 민원 멀티맵
 	multimap<double, complain*> longitude_map; // 경도 기준 전체 민원 멀티맵
-	multimap<int, complain*, greater<int>> cdate_map_front; // 민원 접수 날짜 기준(최근순) 전체 민원 멀티맵
-	multimap<int, complain*> cdate_map_back; // 민원 접수 날짜 기준(오래된순) 전체 민원 멀티맵
+	multimap<time_t, complain*, greater<time_t>> cdate_map_front; // 민원 접수 날짜 기준(최근순) 전체 민원 멀티맵
+	multimap<time_t, complain*> cdate_map_back; // 민원 접수 날짜 기준(오래된순) 전체 민원 멀티맵
 	// 맵 내림차순(greater) 참고 : https://0xd00d00.github.io/2021/08/22/map_value_reverse.html
 public:
 	compl_system() { area_code = ""; } // 기본 생성자
@@ -236,23 +275,24 @@ public:
 
 			getline(data_file, line);
 			word = istringstream(line);
-				
-			word >> line; // 참고 : https://myprivatestudy.tistory.com/48
+			
+			// 참고 : https://myprivatestudy.tistory.com/48
+			getline(word, line, ','); // 참고 : https://myprivatestudy.tistory.com/48
 			pic_name = line;
 				
-			word >> line;
+			getline(word, line, ',');
 			comp_date = stoi(line);
 
-			word >> line;
+			getline(word, line, ',');
 			coordinates.first = stod(line);
-			word >> line;
+			getline(word, line, ',');
 			coordinates.second = stod(line);
 
-			word >> line;
+			getline(word, line, ',');
 			waste_cnt = stoi(line);
 
 			for (int i = 0; i < 5; i++) {
-				word >> line;
+				getline(word, line, ',');
 				wastes[i] = stoi(line);
 			}
 

@@ -30,6 +30,21 @@ int main() {
 
 	output << "main.cpp 실행 시각 : " << currentDateTime() << "\n\n";
 
+	//// 참고 : https://cplusplus.com/reference/ctime/mktime/
+	//time_t rawtime = time(&rawtime);
+	//tm sometime;
+	//errno_t is_error = localtime_s(&sometime, &rawtime);
+	//sometime.tm_year = 2021 - 1900;
+	//sometime.tm_mon = 10 - 1;
+	//sometime.tm_mday = 11;
+	//mktime(&sometime);
+	//if (is_error == 0) {
+	//	char buffer[256];
+	//	strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &sometime);
+	//	output << buffer << "\n\n";
+	//}
+	
+
 	compl_system system;
 	system.system_on();
 
