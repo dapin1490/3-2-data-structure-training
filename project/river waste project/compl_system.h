@@ -124,7 +124,8 @@ public:
 		output << "민원 파일명 : \"" << pic_name << "\"\n";
 		if (is_valid_date == 0) {
 			char buffer[256];
-			strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &comp_date);
+			//strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &comp_date);
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d", &comp_date);
 			output << "신고 일자 : " << buffer << "\n";
 		}
 		else {
@@ -274,6 +275,11 @@ public:
 			istringstream word; // 참고 : https://chbuljumeok1997.tistory.com/42
 
 			getline(data_file, line);
+
+			if (line.length() <= 1) {
+				break;
+			}
+
 			word = istringstream(line);
 			
 			// 참고 : https://myprivatestudy.tistory.com/48
