@@ -4,7 +4,7 @@
 #include <fstream>
 #include <stack>
 #include <ctime>
-#include "BFS_DFS.h"
+#include "..\..\..\github desktop\3-2-data-structure-training\lecture-notes\week09\BFS_DFS.h"
 using namespace std;
 
 string currentDateTime() {
@@ -27,16 +27,20 @@ int main()
 	// 빠른 입출력
 	ios::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
 
-	int g_size;
-	input_file >> g_size;
+	int g_size, line_num;
+	int dst;
+
+	input >> g_size >> line_num;
 	Graph grp(g_size);
 	vector<int> stations;
 
-	output_file << "실행 시간 : " << currentDateTime() << "\n\n";
+	output << "실행 시간 : " << currentDateTime() << "\n\n";
 
-	while (!input_file.eof()) {
+	output << "Graph 탐색 시작\n\n";
+
+	for (int i = 0; i < line_num; i++) {
 		int a, b;
-		input_file >> a >> b;
+		input >> a >> b;
 		grp.add_undir_edge(a, b);
 	}
 	
@@ -67,8 +71,35 @@ int main()
 
 	stations = { 0, 3, 8 };
 	grp.DFS_by_recursion(stations);
+
+	grp.DFS_to_destination(0, 8);
+
+	output << "Graph 탐색 끝\n\nCity 탐색 시작\n\n";
+
+	input >> g_size >> line_num;
+	Graph cities(g_size);
+
+	for (int i = 0; i < line_num; i++) {
+		string city1, city2;
+		input >> city1 >> city2 >> dst;
+		cities.add_undir_edge(city1, city2, dst);
+	}
+
+	output << "CITY CODE LIST\n";
+	for (map<string, int>::iterator i = city_code.begin(); i != city_code.end(); i++) {
+		output << i->first << " : " << i->second << "\n";
+	}
+	output << "\n";
+
+	cities.BFS(0);
+
+	cities.DFS_by_iteration(0);
+
+	cities.DFS_to_destination(0, 4);
+
+	cities.DFS_by_recursion(0);
 	
-	input_file.close();
-	output_file.close();
+	input.close();
+	output.close();
 	return 0;
 }

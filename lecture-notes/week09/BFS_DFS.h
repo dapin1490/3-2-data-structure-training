@@ -6,16 +6,20 @@
 #include <fstream>
 #include <stack>
 #include <string>
+#include <map>
 using namespace std;
 
 const string in_file_route = "res/example_input.txt";
 const string out_file_route = "res/example_output.txt";
 
-extern ifstream input_file{ in_file_route };
-extern ofstream output_file{ out_file_route };
+extern ifstream input{ in_file_route };
+extern ofstream output{ out_file_route };
+
+extern map<string, int> city_code = { {"MOSCOW", 0}, {"LONDON", 1}, {"SEOUL", 2}, {"SEATLE", 3}, {"DUBAI", 4}, {"SYDNEY", 5}};
 
 struct Node {
-	int to_station = INFINITY; // 가장 가까운 station까지의 거리
+	string name = "None";
+	int to_station = -2; // 가장 가까운 station까지의 거리
 	vector<int> adj; // 인접 노드
 	vector<int> d; // 각 인접 노드까지의 거리
 };
@@ -26,13 +30,16 @@ private:
 	vector<Node> graph; // 각 노드의 키값은 벡터의 인덱스로 대체
 	vector<bool> visited; // 방문 여부
 
-	void print_route();
+	void print_distance();
 
 public:
 	Graph(int vts); // 생성자
 
 	void add_undir_edge(int key1, int key2, int d = 1);
 	void add_dir_edge(int from, int to, int d = 1);
+
+	void add_undir_edge(string key1, string key2, int d = 1);
+	void add_dir_edge(string from, string to, int d = 1);
 
 	void BFS(int start_key);
 	void BFS(vector<int> starts);
@@ -65,11 +72,46 @@ void Graph::add_dir_edge(int from, int to, int d) {
 	graph[from].d.push_back(d);
 }
 
-void Graph::print_route() {
+// C++의 맵에 키가 있는지 확인 : https://www.techiedelight.com/ko/determine-if-a-key-exists-in-a-map-in-cpp/
+void Graph::add_undir_edge(string key1, string key2, int d) {
+	if (city_code.find(key1) == city_code.end())
+		city_code.emplace(key1, city_code.size());
+
+	if (city_code.find(key2) == city_code.end())
+		city_code.emplace(key2, city_code.size());
+
+	graph[city_code[key1]].name = key1;
+	graph[city_code[key2]].name = key2;
+
+	graph[city_code[key1]].adj.push_back(city_code[key2]);
+	graph[city_code[key1]].d.push_back(d);
+
+	graph[city_code[key2]].adj.push_back(city_code[key1]);
+	graph[city_code[key2]].d.push_back(d);
+}
+
+void Graph::add_dir_edge(string from, string to, int d) {
+	if (city_code.find(from) == city_code.end())
+		city_code.emplace(from, city_code.size());
+
+	if (city_code.find(to) == city_code.end())
+		city_code.emplace(to, city_code.size());
+
+	graph[city_code[from]].name = from;
+	graph[city_code[to]].name = to;
+
+	graph[city_code[from]].adj.push_back(city_code[to]);
+	graph[city_code[from]].d.push_back(d);
+}
+
+void Graph::print_distance() {
 	vector<Node>::iterator iter;
 	int idx = 0;
 	for (iter = graph.begin(); iter != graph.end(); iter++) {
-		output_file << "Node #" << idx++ << " : " << (*iter).to_station << "\n";
+		if ((*iter).name != "None")
+			output << (*iter).name << " : " << (*iter).to_station << "\n";
+		else
+			output << "Node #" << idx++ << " : " << (*iter).to_station << "\n";
 	}
 }
 
@@ -79,7 +121,7 @@ void Graph::BFS(int start_key) { // 루트(시작점)에서 시작
 	queue<int> que;
 	que.push(start_key); // 큐에 push
 
-	output_file << "----------\nStation : " << start_key << "\nSearch by BFS\n\n";
+	output << "----------\nStation : " << (graph[start_key].name != "None" ? graph[start_key].name : to_string(start_key)) << "\nSearch by BFS\n\n";
 
 	while (!que.empty()) { // 큐가 비어있을 때까지
 		start_key = que.front(); // 큐에서 하나 pop
@@ -91,7 +133,7 @@ void Graph::BFS(int start_key) { // 루트(시작점)에서 시작
 			if (!visited[current]) {
 				visited[current] = true;
 				que.push(current);
-				graph[current].to_station = graph[start_key].to_station + 1; // 지금 방문한 곳은 station으로부터 현재의 기준점보다 1만큼 더 떨어져 있음
+				graph[current].to_station = graph[start_key].to_station + graph[start_key].d[i]; // 지금 방문한 곳은 station으로부터 현재의 기준점보다 1만큼 더 떨어져 있음
 			}
 		}
 	}
@@ -100,8 +142,8 @@ void Graph::BFS(int start_key) { // 루트(시작점)에서 시작
 	visited.assign(vertices, false);
 
 	// 탐색 결과 출력
-	this->print_route();
-	output_file << "----------\n";
+	this->print_distance();
+	output << "----------\n";
 }
 
 void Graph::BFS(vector<int> starts) {
@@ -109,14 +151,14 @@ void Graph::BFS(vector<int> starts) {
 	queue<int> que;
 	int vert;
 
-	output_file << "----------\nStations : ";
+	output << "----------\nStations : ";
 	for (iter = starts.begin(); iter != starts.end(); iter++) {
 		graph[*iter].to_station = 0; // 시작점은 station이므로 station까지의 거리가 0
 		visited[*iter] = true;
 		que.push(*iter);
-		output_file << *iter << "  ";
+		output << (graph[*iter].name != "None" ? graph[*iter].name : to_string(*iter)) << "  ";
 	}
-	output_file << "\nSearch by BFS\n\n";
+	output << "\nSearch by BFS\n\n";
 
 	while (!que.empty()) {
 		vert = que.front();
@@ -128,7 +170,7 @@ void Graph::BFS(vector<int> starts) {
 			if (!visited[current]) {
 				visited[current] = true;
 				que.push(current);
-				graph[current].to_station = graph[vert].to_station + 1; // 지금 방문한 곳은 station으로부터 현재의 기준점보다 1만큼 더 떨어져 있음
+				graph[current].to_station = graph[vert].to_station + graph[vert].d[i]; // 지금 방문한 곳은 station으로부터 현재의 기준점보다 1만큼 더 떨어져 있음
 			}
 		}
 	}
@@ -137,17 +179,17 @@ void Graph::BFS(vector<int> starts) {
 	visited.assign(vertices, false);
 
 	// 탐색 결과 출력
-	this->print_route();
-	output_file << "----------\n";
+	this->print_distance();
+	output << "----------\n";
 }
 
 void Graph::DFS_by_iteration(int start_key) { // 루트(시작점)에서 시작
+	string route = "";
 	stack<pair<int, int>> s; // first는 방문해야 할 노드, second는 직전에 방문한 노드
 
 	s.emplace(start_key, start_key);
-	graph[start_key].to_station = -1; // 시작점은 station이므로 station까지의 거리가 0인데, 절차상 while 안에서 한번 방문하고 +1을 해야 하기 때문에 -1로 초기화
-
-	output_file << "----------\nStation : " << start_key << "\nSearch by DFS(iteration)\n\n";
+	
+	output << "----------\nStation : " << (graph[start_key].name != "None" ? graph[start_key].name : to_string(start_key)) << "\nSearch by DFS(iteration)\n\n";
 
 	while (!s.empty()) {
 		pair<int, int> curr = s.top();
@@ -155,8 +197,11 @@ void Graph::DFS_by_iteration(int start_key) { // 루트(시작점)에서 시작
 
 		if (!visited[curr.first]) {
 			visited[curr.first] = true;
-			graph[curr.first].to_station = graph[curr.second].to_station + 1;
-			output_file << "visit : " << curr.first << "\n";
+			// output << "visit : " << curr.first << "\n";
+			if (graph[curr.first].name != "None")
+				route += (graph[curr.first].name + "   ");
+			else
+				route += (to_string(curr.first) + "   ");
 
 			for (vector<int>::iterator i = graph[curr.first].adj.begin(); i != graph[curr.first].adj.end(); i++) {
 				s.emplace(*i, curr.first);
@@ -168,25 +213,26 @@ void Graph::DFS_by_iteration(int start_key) { // 루트(시작점)에서 시작
 	visited.assign(vertices, false);
 
 	// 탐색 결과 출력
-	this->print_route();
-	output_file << "----------\n";
+	output << "DFS route : " << route << "\n";
+	output << "----------\n";
 }
 
 void Graph::DFS_by_iteration(vector<int> starts) {
+	string route = "";
 	stack<pair<int, int>> s; // first는 방문해야 할 노드, second는 직전에 방문한 노드
 	vector<int>::iterator i;
 
-	output_file << "----------\nStations : ";
+	output << "----------\nStations : ";
 	for (i = starts.begin(); i != starts.end(); i++) {
 		s.emplace(*i, *i);
-		graph[*i].to_station = 0; // 시작점은 station이므로 station까지의 거리가 0
 		visited[*i] = true;
-		output_file << *i << "  ";
+		output << (graph[*i].name != "None" ? graph[*i].name : to_string(*i)) << "  ";
 	}
-	output_file << "\nSearch by DFS(iteration)\n\n";
+	output << "\nSearch by DFS(iteration)\n\n";
 
 	for (i = starts.begin(); i != starts.end(); i++) {
-		output_file << "visit : " << *i << "\n";
+		// output << "visit : " << *i << "\n";
+		route = route + (graph[*i].name != "None" ? graph[*i].name : to_string(*i)) + "   ";
 	}
 
 	for (i = starts.begin(); i != starts.end(); i++) {
@@ -201,8 +247,8 @@ void Graph::DFS_by_iteration(vector<int> starts) {
 
 		if (!visited[curr.first]) {
 			visited[curr.first] = true;
-			graph[curr.first].to_station = graph[curr.second].to_station + 1;
-			output_file << "visit : " << curr.first << "\n";
+			// output << "visit : " << curr.first << "\n";
+			route = route + (graph[curr.first].name != "None" ? graph[curr.first].name : to_string(curr.first)) + "   ";
 
 			for (vector<int>::iterator i = graph[curr.first].adj.begin(); i != graph[curr.first].adj.end(); i++) {
 				s.emplace(*i, curr.first);
@@ -214,39 +260,32 @@ void Graph::DFS_by_iteration(vector<int> starts) {
 	visited.assign(vertices, false);
 
 	// 탐색 결과 출력
-	this->print_route();
-	output_file << "----------\n";
+	output << "DFS route : " << route << "\n";
+	output << "----------\n";
 }
 
 void Graph::DFS_to_destination(int start, int dest) { // 루트(시작점)에서 시작
+	string route = "";
 	stack<pair<int, int>> s; // first는 방문해야 할 노드, second는 직전에 방문한 노드
 
 	s.emplace(start, start);
-	graph[start].to_station = -1; // 시작점은 station이므로 station까지의 거리가 0인데, 절차상 while 안에서 한번 방문하고 +1을 해야 하기 때문에 -1로 초기화
-
-	output_file << "----------\nStation : " << start << "\nSearch by DFS to destination\n\n";
+	
+	output << "----------\nStation : " << (graph[start].name != "None" ? graph[start].name : to_string(start)) << "\nDestination : " << (graph[dest].name != "None" ? graph[dest].name : to_string(dest)) << "\nSearch by DFS to destination\n\n";
 
 	while (!s.empty()) {
 		pair<int, int> curr = s.top();
 		s.pop();
 
 		if (curr.first == dest) {
-			string path;
-			
-			output_file << "found destination\n";
-			while (!s.empty()) {
-				pair<int, int> point = s.top();
-				s.pop();
-				path = to_string(point.first) + " " + path;
-			}
-			output_file << "path : " << path << "\n\n";
-			return;
+			output << "found destination\n";
+			route = route + (graph[curr.first].name != "None" ? graph[curr.first].name : to_string(curr.first)) + "   ";
+			break;
 		}
 
 		if (!visited[curr.first]) {
 			visited[curr.first] = true;
-			graph[curr.first].to_station = graph[curr.second].to_station + 1;
-			output_file << "visit : " << curr.first << "\n";
+			// output << "visit : " << curr.first << "\n";
+			route = route + (graph[curr.first].name != "None" ? graph[curr.first].name : to_string(curr.first)) + "   ";
 
 			for (vector<int>::iterator i = graph[curr.first].adj.begin(); i != graph[curr.first].adj.end(); i++) {
 				s.emplace(*i, curr.first);
@@ -258,32 +297,30 @@ void Graph::DFS_to_destination(int start, int dest) { // 루트(시작점)에서
 	visited.assign(vertices, false);
 
 	// 탐색 결과 출력
-	this->print_route();
-	output_file << "----------\n";
+	output << "DFS route : " << route << "\n";
+	output << "----------\n";
 }
 
 void Graph::DFS_by_recursion(int start_key, bool is_start) {
 	vector<int>::iterator iter;
 
 	if (is_start) {
-		output_file << "Station : " << start_key << "\nSearch by DFS(recursion)\n\n";
-		graph[start_key].to_station = 0; // 시작점은 station이므로 station까지의 거리가 0
+		output << "----------\nStation : " << (graph[start_key].name != "None" ? graph[start_key].name : to_string(start_key)) << "\nSearch by DFS(recursion)\n\n";
 		visited[start_key] = true; // 방문 표시
-		output_file << "visit : " << start_key << "\n";
+		output << "visit : " << (graph[start_key].name != "None" ? graph[start_key].name : to_string(start_key)) << "\n";
 	}
 
 	for (iter = graph[start_key].adj.begin(); iter != graph[start_key].adj.end(); iter++) {
 		if (!visited[*iter]) {
 			visited[*iter] = true;
-			output_file << "visit : " << *iter << "\n";
-			graph[*iter].to_station = graph[start_key].to_station + 1;
+			output << "visit : " << (graph[*iter].name != "None" ? graph[*iter].name : to_string(*iter)) << "\n";
 			DFS_by_recursion(*iter, false);
 		}
 	}
 
 	if (is_start) {
 		visited.assign(vertices, false);
-		print_route();
+		output << "----------\n";
 	}
 }
 
@@ -291,16 +328,15 @@ void Graph::DFS_by_recursion(vector<int> starts, bool is_start) {
 	vector<int>::iterator iter;
 
 	if (is_start) {
-		output_file << "----------\nStation : ";
+		output << "----------\nStation : ";
 		for (vector<int>::iterator i = starts.begin(); i != starts.end(); i++) {
-			output_file << *i << " ";
+			output << (graph[*i].name != "None" ? graph[*i].name : to_string(*i)) << " ";
 		}
-		output_file << "\nSearch by DFS(recursion)\n\n";
+		output << "\nSearch by DFS(recursion)\n\n";
 
 		for (vector<int>::iterator i = starts.begin(); i != starts.end(); i++) {
-			graph[*i].to_station = 0; // 시작점은 station이므로 station까지의 거리가 0
 			visited[*i] = true;
-			output_file << "visit : " << *i << "\n";
+			output << "visit : " << (graph[*i].name != "None" ? graph[*i].name : to_string(*i)) << "\n";
 		}
 	}
 
@@ -308,8 +344,7 @@ void Graph::DFS_by_recursion(vector<int> starts, bool is_start) {
 		for (iter = graph[*i].adj.begin(); iter != graph[*i].adj.end(); iter++) {
 			if (!visited[*iter]) {
 				visited[*iter] = true;
-				output_file << "visit : " << *iter << "\n";
-				graph[*iter].to_station = graph[*i].to_station + 1;
+				output << "visit : " << (graph[*iter].name != "None" ? graph[*iter].name : to_string(*iter)) << "\n";
 
 				vector<int> next = { *iter };
 				DFS_by_recursion(next, false);
@@ -319,7 +354,6 @@ void Graph::DFS_by_recursion(vector<int> starts, bool is_start) {
 
 	if (is_start) {
 		visited.assign(vertices, false);
-		print_route();
-		output_file << "----------\n";
+		output << "----------\n";
 	}
 }
