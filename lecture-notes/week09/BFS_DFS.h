@@ -9,8 +9,8 @@
 #include <map>
 using namespace std;
 
-const string in_file_route = "res/example_input.txt";
-const string out_file_route = "res/example_output.txt";
+const string in_file_route = "res/input.txt";
+const string out_file_route = "res/output.txt";
 
 extern ifstream input{ in_file_route };
 extern ofstream output{ out_file_route };
