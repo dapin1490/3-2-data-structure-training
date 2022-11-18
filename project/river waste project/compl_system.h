@@ -14,8 +14,11 @@ using namespace std;
 
 // 행정동코드 출처 : https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000052&nttId=94196
 
-const string intxt = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/input.txt";
-const string outtxt = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/output.txt";
+enum class _error : int{shut_down, ValueErrorInt, ValueErrorChar, UnknownError};
+
+const string root = "../../../github desktop/3-2-data-structure-training/project/river waste project/";
+const string intxt = root + "data/input.txt";
+const string outtxt = root + "data/output.txt";
 
 extern ifstream input{ intxt };
 extern ofstream output{ outtxt };
@@ -36,15 +39,15 @@ string currentDateTime() {
 }
 
 // C++ 에러 메시지 참고 : https://learn.microsoft.com/ko-kr/cpp/error-messages/compiler-errors-1/c-cpp-build-errors?view=msvc-170
-void error(int error_code) {
-	switch (error_code) {
-	case -1:
+void error(_error code) {
+	switch (code) {
+	case _error::shut_down:
 		output << "프로그램 비정상 종료\n";
 		break;
-	case 0: // 잘못된 입력 - int
+	case _error::ValueErrorInt: // 잘못된 입력 - int
 		output << "ValueErrorInt: int 값이 입력되어야 합니다.\n";
 		break;
-	case 1: // 잘못된 입력 - char
+	case _error::ValueErrorChar: // 잘못된 입력 - char
 		output << "ValueErrorChar: char 값이 입력되어야 합니다.\n";
 		break;
 	default:
@@ -209,7 +212,7 @@ public:
 		output << "입력된 지역번호는 " << areacode << "입니다.\n";
 
 		this->area_code = areacode;
-		file_route = "../../../github desktop/3-2-data-structure-training/project/river waste project/data/" + areacode + ".csv";
+		file_route = root + "data/" + areacode + ".csv";
 		is_file_valuable = _access(file_route.c_str(), 0) != -1;
 
 		if (is_file_valuable) { // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
@@ -232,7 +235,7 @@ public:
 					break;
 				default: // 이상한 대답 하면 나도 안 해 던져
 					output << "잘못된 입력: 'Y' 또는 'N'만 입력할 수 있습니다.\n";
-					error(-1);
+					error(_error::shut_down);
 				}
 			}
 
@@ -242,6 +245,8 @@ public:
 		}
 		else if (!is_file_valuable) { // 기존 데이터 파일 존재하지 않음
 			// 새 세이브 파일 만들고 메소드 종료
+			// 참고 : https://homzzang.com/b/cpp-34
+			ofstream new_save(root + "data/" + areacode + ".csv");
 		}
 
 		if (is_file_valuable && is_load_save == 'N') {
