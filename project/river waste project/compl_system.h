@@ -247,6 +247,8 @@ public:
 			// 새 세이브 파일 만들고 메소드 종료
 			// 참고 : https://homzzang.com/b/cpp-34
 			ofstream new_save(root + "data/" + areacode + ".csv");
+			new_save.close();
+			return;
 		}
 
 		if (is_file_valuable && is_load_save == 'N') {
@@ -255,14 +257,24 @@ public:
 			return;
 		}
 	}
-	void receive_compl(); // 민원 접수
+	void receive_compl() { // 민원 접수
+		return;
+	}
 
-	void view_all(); // 정렬 기준(sort_by)에 따른 전체 민원 조회(출력하게 할 것이므로 반환값 없음)
-	void search_compl(); // 검색 기준(search_by)에 따른 특정 민원 검색
+	void view_all() { // 정렬 기준(sort_by)에 따른 전체 민원 조회(출력하게 할 것이므로 반환값 없음)
+		return;
+	}
+	void search_compl() { // 검색 기준(search_by)에 따른 특정 민원 검색
+		return;
+	}
 
-	bool is_enough(int waste_code); // 특정 분류의 쓰레기 민원이 충분히 많아 처리해도 될만한지 확인
-	void clear_compls(int waste_code); // 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
-	// 벡터에서 NULL 지우기 참고 : https://cho001.tistory.com/164
+	bool is_enough(int waste_code) { // 특정 분류의 쓰레기 민원이 충분히 많아 처리해도 될만한지 확인
+		return;
+	}
+	void clear_compls(int waste_code) { // 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
+		// 벡터에서 NULL 지우기 참고 : https://cho001.tistory.com/164
+		return;
+	}
 
 	void load_save(string froute) { // 파일에 기록된 데이터를 통한 이전 업무 기록 로드. 매번 새 시스템을 생성할 수는 없으니까.
 		ifstream data_file{ froute };
@@ -328,5 +340,7 @@ public:
 		output << "load complete\n";
 		data_file.close();
 	}
-	void save_task(); // 업무 진행 상황을 파일로 기록. 업무를 종료하거나 중간 저장이 필요할 때 실행.
+	void save_task() { // 업무 진행 상황을 파일로 기록. 업무를 종료하거나 중간 저장이 필요할 때 실행.
+		return;
+	}
 };
