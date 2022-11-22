@@ -43,10 +43,11 @@ int main() {
 	//	strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &sometime);
 	//	output << buffer << "\n\n";
 	//}
-	
 
 	compl_system system;
 	system.system_on();
+
+
 
 	input.close();
 	output.close();

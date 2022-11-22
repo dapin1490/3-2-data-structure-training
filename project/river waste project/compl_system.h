@@ -68,6 +68,7 @@ public:
 	int wastes[5]; // 멤버 변수지만 어차피 getter를 써도 포인터로 전달되어 원본 수정이 가능하니 public 변수로 사용
 
 public:
+	complain() {}
 	complain(string pn, int cdate, double x, double y, int wcnt, int* ws) {
 		// 참고 : https://cplusplus.com/reference/ctime/mktime/
 		// 참고 : https://www.it-note.kr/143
@@ -257,20 +258,114 @@ public:
 			return;
 		}
 	}
+
 	void receive_compl() { // 민원 접수
+		complain new_comp;
+		string word;
+		string pn; // 사진 이름(필요시 절대/상대 파일 경로 포함, 사진 크기를 비롯해 사진 파일 자체에 대한 각종 정보는 원본 파일의 정보에 포함된다고 본다)
+		int cdate; // 민원 신고 날짜
+		double x, y; // 사진 좌표
+		int wcnt; // 포함된 쓰레기의 종류 수
+		string ws;
+		char ans;
+		string waiting_file_route = root + "data/waiting list.csv";
+
+		output << "새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
+		input >> pn;
+
+		output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
+		input >> word;
+		cdate = stoi(word);
+
+		output << "신고 위치(위도, 경도)를 공백으로 구분하여 입력해 주세요.\n";
+		input >> word;
+		x = stod(word);
+		input >> word;
+		y = stod(word);
+
+		output << "신고할 쓰레기의 종류 수를 입력해 주세요.\n";
+		input >> word;
+		wcnt = stoi(word);
+
+		output << "분류별 쓰레기 포함 여부를 공백 없이 다섯 자리 숫자로 입력해 주세요.\n";
+		input >> ws;
+
+		new_comp = complain(pn, cdate, x, y, wcnt, ws);
+
+		output << "민원 정보 입력이 완료되었습니다. 입력한 정보를 다시 확인해 주세요.\n";
+		new_comp.print();
+
+		output << "민원을 접수하시겠습니까? Y / N\n";
+		input >> ans;
+
+		if (ans == 'Y') {
+			output << "민원을 접수 중입니다...\n";
+
+			this->all_compls.push_back(&new_comp);
+			this->comp_map.emplace(new_comp.get_name(), &new_comp);
+			this->latitude_map.emplace(new_comp.get_codi().first, &new_comp);
+			this->longitude_map.emplace(new_comp.get_codi().second, &new_comp);
+			this->cdate_map_front.emplace(new_comp.get_date(), &new_comp);
+			this->cdate_map_back.emplace(new_comp.get_date(), &new_comp);
+
+			for (int i = 0; i < 5; i++) {
+				switch (new_comp.wastes[i]) {
+				case 0:
+					continue;
+				default:
+					this->compls_list[i].add_compl(&new_comp);
+				}
+			}
+
+			output << "민원이 접수되었습니다.\n";
+		}
+		else if (ans == 'N') {
+			output << "민원을 접수하지 않습니다. 해당 민원을 승인 대기 목록에 추가하시겠습니까? Y / N\n";
+			input >> ans;
+
+			if (ans == 'N') { // 접수한 민원 승인 거절, 대기 목록 추가 거절 재차 확인
+				output << "주의: 계속하면 입력된 민원이 사라집니다. 계속하시겠습니까? Y / N\n";
+				input >> ans;
+
+				switch (ans) {
+				case 'Y': ans = 'N'; break;
+				case 'N': ans = 'Y'; break;
+				}
+			}
+
+			if (ans == 'Y') { // 접수한 민원을 대기 목록에 추가
+				// 참고 : https://blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=sea5727&logNo=220978963342
+				fstream file;
+				file.open(waiting_file_route, ios::app);
+
+				file << pn << "," << cdate << "," << x << "," << y << "," << wcnt << ",";
+				for (int i = 0; i < 5; i++) {
+					file << ws.at(i) << (i < 4 ? "," : "");
+				}
+
+				file.close();
+			}
+		}
+		else {
+			output << "잘못된 입력: 'Y' 또는 'N'만 입력할 수 있습니다.\n";
+			error(_error::shut_down);
+		}
+
 		return;
 	}
 
 	void view_all() { // 정렬 기준(sort_by)에 따른 전체 민원 조회(출력하게 할 것이므로 반환값 없음)
 		return;
 	}
+
 	void search_compl() { // 검색 기준(search_by)에 따른 특정 민원 검색
 		return;
 	}
 
 	bool is_enough(int waste_code) { // 특정 분류의 쓰레기 민원이 충분히 많아 처리해도 될만한지 확인
-		return;
+		return false;
 	}
+
 	void clear_compls(int waste_code) { // 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
 		// 벡터에서 NULL 지우기 참고 : https://cho001.tistory.com/164
 		return;
@@ -340,6 +435,7 @@ public:
 		output << "load complete\n";
 		data_file.close();
 	}
+
 	void save_task() { // 업무 진행 상황을 파일로 기록. 업무를 종료하거나 중간 저장이 필요할 때 실행.
 		return;
 	}
