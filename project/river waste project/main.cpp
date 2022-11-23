@@ -47,7 +47,7 @@ int main() {
 	compl_system system;
 	system.system_on();
 
-
+	system.receive_compl();
 
 	input.close();
 	output.close();

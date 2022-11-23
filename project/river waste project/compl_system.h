@@ -68,7 +68,7 @@ public:
 	int wastes[5]; // 멤버 변수지만 어차피 getter를 써도 포인터로 전달되어 원본 수정이 가능하니 public 변수로 사용
 
 public:
-	complain() {}
+	complain() { pic_name = "None"; }
 	complain(string pn, int cdate, double x, double y, int wcnt, int* ws) {
 		// 참고 : https://cplusplus.com/reference/ctime/mktime/
 		// 참고 : https://www.it-note.kr/143
@@ -84,7 +84,7 @@ public:
 		waste_cnt = wcnt;
 		copy(ws, ws + 5, wastes); // 배열 복사 참고 : https://terrorjang.tistory.com/98
 		
-		print();
+		// print();
 	}
 	complain(string pn, int cdate, double x, double y, int wcnt, string ws) {
 		// 참고 : https://cplusplus.com/reference/ctime/mktime/
@@ -113,7 +113,7 @@ public:
 			}
 		}
 
-		print();
+		// print();
 	}
 
 	string get_name() { return pic_name; } // 사진 이름 반환
@@ -181,7 +181,7 @@ public:
 
 class compl_system { // 하천 쓰레기 민원 처리 시스템
 private:
-	string area_code; // 지역 코드(행정동/법정동 등등)
+	pair<int, int> area_code; // 지역 코드(위도, 경도 정수 부분)
 	accumed_compls compls_list[5]; // 쓰레기 분류별 누적 민원 배열
 
 	vector<complain*> all_compls; // 전체 민원 벡터
@@ -192,28 +192,28 @@ private:
 	multimap<time_t, complain*> cdate_map_back; // 민원 접수 날짜 기준(오래된순) 전체 민원 멀티맵
 	// 맵 내림차순(greater) 참고 : https://0xd00d00.github.io/2021/08/22/map_value_reverse.html
 public:
-	compl_system() { area_code = ""; } // 기본 생성자
-	compl_system(string area) { // 생성자
-		area_code = area;
+	compl_system() { area_code = make_pair(NULL, NULL); } // 기본 생성자
+	compl_system(int x, int y) { // 생성자
+		area_code = make_pair(x, y);
 		for (int i = 0; i < 5; i++) {
 			compls_list[i] = accumed_compls(i);
 		}
 	}
 
-	string get_acode() { return area_code; }
+	pair<int, int> get_acode() { return area_code; }
 
 	void system_on() { // 시스템 시작 : 사용자에게 지역 코드를 입력받고 기존 데이터 유무 확인, 새 로그 생성 등
-		string areacode;
+		pair<int, int> acode;
 		string file_route;
 		bool is_file_valuable;
 		char is_load_save;
 
-		output << "하천 쓰레기 민원 처리 시스템을 시작합니다. 지역 번호를 숫자만 입력해 주세요.\n";
-		input >> areacode; // 20220901 기준 행정동코드 csv 파일에서 번호 탐색하여 잘못된 입력 처리 필요
-		output << "입력된 지역번호는 " << areacode << "입니다.\n";
+		output << "하천 쓰레기 민원 처리 시스템을 시작합니다. 관할 구역의 위도와 경도 정수 부분을 공백으로 구분하여 입력해 주세요.\n";
+		input >> acode.first >> acode.second;
+		output << "입력된 코드는 (" << acode.first << ", " << acode.second << ")입니다.\n";
 
-		this->area_code = areacode;
-		file_route = root + "data/" + areacode + ".csv";
+		this->area_code = acode;
+		file_route = root + "data/" + to_string(acode.first) + "_" + to_string(acode.second) + ".csv";
 		is_file_valuable = _access(file_route.c_str(), 0) != -1;
 
 		if (is_file_valuable) { // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
@@ -247,7 +247,7 @@ public:
 		else if (!is_file_valuable) { // 기존 데이터 파일 존재하지 않음
 			// 새 세이브 파일 만들고 메소드 종료
 			// 참고 : https://homzzang.com/b/cpp-34
-			ofstream new_save(root + "data/" + areacode + ".csv");
+			ofstream new_save(file_route);
 			new_save.close();
 			return;
 		}
@@ -267,89 +267,75 @@ public:
 		double x, y; // 사진 좌표
 		int wcnt; // 포함된 쓰레기의 종류 수
 		string ws;
-		char ans;
+		char ans = 'N';
 		string waiting_file_route = root + "data/waiting list.csv";
 
-		output << "새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
-		input >> pn;
+		while (ans != 'Y') {
+			output << "새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
+			input >> pn;
 
-		output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
-		input >> word;
-		cdate = stoi(word);
+			output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
+			input >> word;
+			cdate = stoi(word);
 
-		output << "신고 위치(위도, 경도)를 공백으로 구분하여 입력해 주세요.\n";
-		input >> word;
-		x = stod(word);
-		input >> word;
-		y = stod(word);
+			output << "신고 위치(위도, 경도)를 공백으로 구분하여 입력해 주세요.\n";
+			input >> word;
+			x = stod(word);
+			input >> word;
+			y = stod(word);
 
-		output << "신고할 쓰레기의 종류 수를 입력해 주세요.\n";
-		input >> word;
-		wcnt = stoi(word);
+			output << "신고할 쓰레기의 종류 수를 입력해 주세요.\n";
+			input >> word;
+			wcnt = stoi(word);
 
-		output << "분류별 쓰레기 포함 여부를 공백 없이 다섯 자리 숫자로 입력해 주세요.\n";
-		input >> ws;
+			output << "분류별 쓰레기 포함 여부를 공백 없이 다섯 자리 숫자로 입력해 주세요.\n";
+			input >> ws;
 
-		new_comp = complain(pn, cdate, x, y, wcnt, ws);
+			new_comp = complain(pn, cdate, x, y, wcnt, ws);
 
-		output << "민원 정보 입력이 완료되었습니다. 입력한 정보를 다시 확인해 주세요.\n";
-		new_comp.print();
+			output << "민원 정보 입력이 완료되었습니다. 입력한 정보를 다시 확인해 주세요.\n";
+			new_comp.print();
 
-		output << "민원을 접수하시겠습니까? Y / N\n";
-		input >> ans;
-
-		if (ans == 'Y') {
-			output << "민원을 접수 중입니다...\n";
-
-			this->all_compls.push_back(&new_comp);
-			this->comp_map.emplace(new_comp.get_name(), &new_comp);
-			this->latitude_map.emplace(new_comp.get_codi().first, &new_comp);
-			this->longitude_map.emplace(new_comp.get_codi().second, &new_comp);
-			this->cdate_map_front.emplace(new_comp.get_date(), &new_comp);
-			this->cdate_map_back.emplace(new_comp.get_date(), &new_comp);
-
-			for (int i = 0; i < 5; i++) {
-				switch (new_comp.wastes[i]) {
-				case 0:
-					continue;
-				default:
-					this->compls_list[i].add_compl(&new_comp);
-				}
-			}
-
-			output << "민원이 접수되었습니다.\n";
-		}
-		else if (ans == 'N') {
-			output << "민원을 접수하지 않습니다. 해당 민원을 승인 대기 목록에 추가하시겠습니까? Y / N\n";
+			output << "이 정보로 계속하시겠습니까? Y / N\n";
 			input >> ans;
+		}
 
-			if (ans == 'N') { // 접수한 민원 승인 거절, 대기 목록 추가 거절 재차 확인
-				output << "주의: 계속하면 입력된 민원이 사라집니다. 계속하시겠습니까? Y / N\n";
-				input >> ans;
+		if (int(x) != this->area_code.first || int(y) != this->area_code.second) {
+			output << "해당 민원은 관할 구역에 위치하지 않습니다. 승인 대기 목록에 추가합니다.\n";
 
-				switch (ans) {
-				case 'Y': ans = 'N'; break;
-				case 'N': ans = 'Y'; break;
-				}
+			// 참고 : https://blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=sea5727&logNo=220978963342
+			fstream file;
+			file.open(waiting_file_route, ios::app);
+
+			file << pn << "," << cdate << "," << x << "," << y << "," << wcnt << ",";
+			for (int i = 0; i < 5; i++) {
+				file << ws.at(i) << (i < 4 ? "," : "");
 			}
 
-			if (ans == 'Y') { // 접수한 민원을 대기 목록에 추가
-				// 참고 : https://blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=sea5727&logNo=220978963342
-				fstream file;
-				file.open(waiting_file_route, ios::app);
+			file.close();
 
-				file << pn << "," << cdate << "," << x << "," << y << "," << wcnt << ",";
-				for (int i = 0; i < 5; i++) {
-					file << ws.at(i) << (i < 4 ? "," : "");
-				}
+			return;
+		}
 
-				file.close();
+		output << "민원을 접수 중입니다...\n";
+
+		this->all_compls.push_back(&new_comp);
+		this->comp_map.emplace(new_comp.get_name(), &new_comp);
+		this->latitude_map.emplace(new_comp.get_codi().first, &new_comp);
+		this->longitude_map.emplace(new_comp.get_codi().second, &new_comp);
+		this->cdate_map_front.emplace(new_comp.get_date(), &new_comp);
+		this->cdate_map_back.emplace(new_comp.get_date(), &new_comp);
+
+		for (int i = 0; i < 5; i++) {
+			switch (new_comp.wastes[i]) {
+			case 0:
+				continue;
+			default:
+				this->compls_list[i].add_compl(&new_comp);
 			}
 		}
-		else {
-			output << "잘못된 입력: 'Y' 또는 'N'만 입력할 수 있습니다.\n";
-			error(_error::shut_down);
-		}
+
+		output << "민원이 접수되었습니다.\n";
 
 		return;
 	}
