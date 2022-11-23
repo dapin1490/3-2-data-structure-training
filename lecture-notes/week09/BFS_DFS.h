@@ -9,8 +9,11 @@
 #include <map>
 using namespace std;
 
-const string in_file_route = "res/input.txt";
-const string out_file_route = "res/output.txt";
+// const string in_file_route = "res/input.txt";
+// const string out_file_route = "res/output.txt";
+
+const string in_file_route = "../3-2-data-structure-training/lecture-notes/week09/input.txt";
+const string out_file_route = "../3-2-data-structure-training/lecture-notes/week09/output.txt";
 
 extern ifstream input{ in_file_route };
 extern ofstream output{ out_file_route };
