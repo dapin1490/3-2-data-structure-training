@@ -3,9 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <ctime>
 #include <queue>
 #include <list>
+#include <algorithm>
 using namespace std;
 
 const string root = "../../../github desktop/3-2-data-structure-training/lecture-notes/week12/";
@@ -17,29 +17,29 @@ extern ofstream output{ outtxt };
 
 enum class _error : int { shut_down, ValueErrorInt, ValueErrorChar, UnknownError };
 
-// C++ ¿¡·¯ ¸Þ½ÃÁö Âü°í : https://learn.microsoft.com/ko-kr/cpp/error-messages/compiler-errors-1/c-cpp-build-errors?view=msvc-170
+// C++ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : https://learn.microsoft.com/ko-kr/cpp/error-messages/compiler-errors-1/c-cpp-build-errors?view=msvc-170
 void error(_error code, string message="") {
 	if (!message.empty())
 		output << "error: " << message << "\n";
 
 	switch (code) {
 	case _error::shut_down:
-		output << "ÇÁ·Î±×·¥ ºñÁ¤»ó Á¾·á\n";
+		output << "ï¿½ï¿½ï¿½Î±×·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½\n";
 		break;
-	case _error::ValueErrorInt: // Àß¸øµÈ ÀÔ·Â - int
-		output << "ValueErrorInt: int °ªÀÌ ÀÔ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù.\n";
+	case _error::ValueErrorInt: // ï¿½ß¸ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ - int
+		output << "ValueErrorInt: int ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ÂµÇ¾ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.\n";
 		break;
-	case _error::ValueErrorChar: // Àß¸øµÈ ÀÔ·Â - char
-		output << "ValueErrorChar: char °ªÀÌ ÀÔ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù.\n";
+	case _error::ValueErrorChar: // ï¿½ß¸ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ - char
+		output << "ValueErrorChar: char ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ÂµÇ¾ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.\n";
 		break;
 	default:
-		output << "UnknownError: ¾Ë ¼ö ¾ø´Â ¿À·ù\n";
+		output << "UnknownError: ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½\n";
 	}
 
-	exit(1); // ÇÁ·Î±×·¥ ºñÁ¤»ó Á¾·á
+	exit(1); // ï¿½ï¿½ï¿½Î±×·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
-struct cmp { // ´ÙÀÍ½ºÆ®¶ó ¿ì¼±¼øÀ§ Å¥ ºñ±³ ¿¬»êÀÚ
+struct cmp { // ï¿½ï¿½ï¿½Í½ï¿½Æ®ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ Å¥ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 	bool operator()(pair<unsigned, unsigned> a, pair<unsigned, unsigned> b) {
 		if (a.second == b.second)
 			return a.first >= b.first;
@@ -50,202 +50,188 @@ struct cmp { // ´ÙÀÍ½ºÆ®¶ó ¿ì¼±¼øÀ§ Å¥ ºñ±³ ¿¬»êÀÚ
 
 template <typename T>
 struct Edge {
-	T w; // °¡ÁßÄ¡
-	unsigned from; // ½ÃÀÛÁ¡
-	unsigned to; // Á¾Á¡
+	T w; // ï¿½ï¿½ï¿½ï¿½Ä¡
+	unsigned from; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	unsigned to; // ï¿½ï¿½ï¿½ï¿½
 };
 
 template <typename T>
 class TGraph {
 private:
-	unsigned v; // Á¤Á¡ ¼ö
-	vector<Edge<T>> edges; // ±×·¡ÇÁ°¡ °®´Â °£¼±µé
+	unsigned v; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+	vector<Edge<T>> edges; // ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 public:
-	// »ý¼ºÀÚ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	TGraph() { this->v = 0; }
 	TGraph(unsigned v) { this->v = v; }
 
-	// ÇÔ¼ö Á¤ÀÇ¿¡ ¾²ÀÎ const : ÀÌ ÇÔ¼ö ¾È¿¡¼­ ¾²´Â °ªµéÀ» º¯°æÇÒ ¼ö ¾ø´Ù
-	unsigned size() const { return v; } // ±×·¡ÇÁ°¡ °®´Â Á¤Á¡ÀÇ ¼ö¸¦ ¹ÝÈ¯
-	auto& edges_from() const { return this->edges; } // ±×·¡ÇÁ°¡ °®´Â °£¼±µéÀ» ¹ÝÈ¯
-	// Æ¯Á¤ Á¤Á¡¿¡ ¿¬°áµÈ °£¼±µé¸¸ ¹ÝÈ¯
-	auto edges_from(unsigned i) const { // ¿©±â¿¡ & ¾²¸é °á°ú°¡ Á¦´ë·Î ¹ÝÈ¯ÀÌ ¾È µÊ. ±Ùµ¥ ÀÌÀ¯´Â ¸ð¸§..
+	// ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½Ç¿ï¿½ ï¿½ï¿½ï¿½ï¿½ const : ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½È¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	unsigned size() const { return v; } // ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+	auto& edges_from() const { return this->edges; } // ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+	// Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½é¸¸ ï¿½ï¿½È¯
+	auto edges_from(unsigned i) const { // ï¿½ï¿½ï¿½â¿¡ & ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½. ï¿½Ùµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½..
 		vector<Edge<T>> edge_from_i;
 		for (auto& e : edges) {
 			if (e.from == i)
 				edge_from_i.push_back(e);
 		}
-		/*for (int idx = 0; idx < this->edges.size(); idx++) {
+		/* // ï¿½ï¿½ï¿½ï¿½ ï¿½Úµåµµ ï¿½È°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+		for (int idx = 0; idx < this->edges.size(); idx++) {
 			if (this->edges[idx].from == i)
 				edge_from_i.push_back(edges[idx]);
 		}*/
 		return edge_from_i;
 	}
 
-	void add(Edge<T>&& e) { // ¹æÇâ °£¼± Ãß°¡
+	void add(Edge<T>&& e) { // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		if (e.from > 0 && e.from <= this->v && e.to > 0 && e.to <= this->v)
 			this->edges.push_back(e);
 		else
-			error(_error::shut_down, "Á¤Á¡ ¹üÀ§ ÃÊ°ú");
+			error(_error::shut_down, "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½");
 
 		return;
 	}
 
-	void add_undir(Edge<T>&& e) { // ¹«¹æÇâ °£¼± Ãß°¡
+	void add_undir(Edge<T>&& e) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		if (e.from > 0 && e.from <= this->v && e.to > 0 && e.to <= this->v) {
 			this->edges.push_back(e);
 			this->edges.push_back(Edge<T>{e.w, e.to, e.from});
 		}
 		else
-			error(_error::shut_down, "Á¤Á¡ ¹üÀ§ ÃÊ°ú");
+			error(_error::shut_down, "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½");
 
 		return;
 	}
 
-	void print() { // ±×·¡ÇÁ Ãâ·Â
+	void print() { // ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		for (int i = 1; i <= v; i++) {
-			output << "# " << i << " : ";
-			vector<Edge<T>> edge = this->TGraph::edges_from(i);
+			output << "# " << i << " : "; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£
+			vector<Edge<T>> edge = this->TGraph::edges_from(i); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			for (auto& e : edge)
-				output << "(" << e.to << ", " << e.w << ")  ";
+				output << "(" << e.to << ", " << e.w << ")  "; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 			output << "\n";
 		}
 		return;
 	}
 
-	// ±âº» : ½ÃÀÛÁ¡À¸·ÎºÎÅÍÀÇ ÃÖ¼Ò °Å¸®¸¸ ±¸ÇÏ´Â ´ÙÀÍ½ºÆ®¶ó
-	vector<unsigned> dijkstra(unsigned s) { // s´Â ½ÃÀÛÁ¡
-		vector<unsigned> d(v + 1, numeric_limits<unsigned>::max()); // ÀúÀå¿ë °Å¸® º¤ÅÍ. Á¤Á¡ ¹øÈ£°¡ 1ºÎÅÍ ½ÃÀÛÇÔ
-		vector<bool> visited(v + 1, false); // ¹æ¹® ¿©ºÎ ÃÊ±âÈ­
-		unsigned vert = s; // ÀÌÁ¦ ¹æ¹®ÇÒ Á¤Á¡ : ¾ÆÁ÷ ½ÃÀÛÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ½ÃÀÛÁ¡À¸·Î ÃÊ±âÈ­
-		visited[0] = true; // ¾È ¾²´Â ÀÎµ¦½º ¹æ¹®ÇÒ ÀÏ ¾ø°Ô ¹Ì¸® Ç¥½Ã
+	// ï¿½âº» : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Í½ï¿½Æ®ï¿½ï¿½
+	auto dijkstra(unsigned s) { // sï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		vector<unsigned> d(v + 1, numeric_limits<unsigned>::max()); // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		vector<bool> visited(v + 1, false); // ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		Heap<unsigned> next_visit;
+
+		unsigned vert = s; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		visited[0] = true; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ Ç¥ï¿½ï¿½
+
+		for (unsigned i = 1; i <= v; i++)
+			next_visit.push(HeapNode<unsigned>{i, d[i]});
 		/*
-		1. ½ÃÀÛÁ¡ ¹æ¹®
-		2. °Å¸® ÆÄ¾Ç
-		3. °¡Àå °¡±î¿î °÷À¸·Î ÀÌµ¿
-		4. ¹Ýº¹
+		1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®
+		2. ï¿½Å¸ï¿½ ï¿½Ä¾ï¿½
+		3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
+		4. ï¿½Ýºï¿½
 		*/
-		d[s] = 0; // ½ÃÀÛÁ¡Àº °Å¸® 0
+		d[s] = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ 0
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ¾ÆÁ÷ ¹æ¹®ÇÏÁö ¾ÊÀº Á¤Á¡ÀÌ ³²¾ÆÀÖ´Â µ¿¾È
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ´ÙÀ½¿¡ ¹æ¹®ÇÒ Á¤Á¡ : (Á¤Á¡, °Å¸®)
+		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
+			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
 
-			visited[vert] = true; // Á¤Á¡ ¹æ¹®
-			vector<Edge<T>> v_edge = edges_from(vert); // Áö±Ý ¹æ¹®ÇÑ Á¤Á¡¿¡ ¿¬°áµÈ °£¼±µé °¡Á®¿À±â
+			visited[vert] = true; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®
+			vector<Edge<T>> v_edge = edges_from(vert); // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 			for (auto& e : v_edge)
-				d[e.to] = min(d[e.to], d[vert] + e.w); // °Å¸® ¾÷µ¥ÀÌÆ®
+				d[e.to] = min(d[e.to], d[vert] + e.w); // ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 
 			for (unsigned i = 1; i <= v; i++)
-				next_visit.push(make_pair(i, d[i])); // ¸ðµç °£¼±À» ¿ì¼±¼øÀ§ Å¥¿¡ Ãß°¡
+				next_visit.push(make_pair(i, d[i])); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ß°ï¿½
 
-			while (!next_visit.empty()) { // ´ÙÀ½ ¹æ¹® Á¤Á¡ °í¸£±â
-				pair<unsigned, unsigned> next = next_visit.top(); // (Á¤Á¡, °Å¸®)
+			while (!next_visit.empty()) { // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				pair<unsigned, unsigned> next = next_visit.top(); // (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
 				next_visit.pop();
-				if (!visited[next.first]) { // ¹æ¹®ÇÏÁö ¾ÊÀº Á¤Á¡À» ´ÙÀ½ ¹æ¹®Áö·Î Á¤ÇÏ°í break
+				if (!visited[next.first]) { // ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ break
 					vert = next.first;
 					break;
 				}
 			}
 		}
 
-		return d; // °Å¸® º¤ÅÍ ¹ÝÈ¯
+		return d; // ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 	}
 
-	// ÀÀ¿ë : ´ÙÀÍ½ºÆ®¶ó °æ·Î Å½»ö
-	vector<pair<unsigned, unsigned>> dijkstra_path(unsigned s) { // s´Â ½ÃÀÛÁ¡
-		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // ÀúÀå¿ë °Å¸® º¤ÅÍ. Á¤Á¡ ¹øÈ£°¡ 1ºÎÅÍ ½ÃÀÛÇÔ. (ÃÖ¼Ò ºñ¿ë °Å¸®, Á÷Àü °æ·Î Á¤Á¡)
-		vector<bool> visited(v + 1, false); // ¹æ¹® ¿©ºÎ ÃÊ±âÈ­
-		unsigned vert = s; // ÀÌÁ¦ ¹æ¹®ÇÒ Á¤Á¡ : ¾ÆÁ÷ ½ÃÀÛÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ½ÃÀÛÁ¡À¸·Î ÃÊ±âÈ­
-		visited[0] = true; // ¾È ¾²´Â ÀÎµ¦½º ¹æ¹®ÇÒ ÀÏ ¾ø°Ô ¹Ì¸® Ç¥½Ã
-		/*
-		1. ½ÃÀÛÁ¡ ¹æ¹®
-		2. °Å¸® ÆÄ¾Ç
-		3. °¡Àå °¡±î¿î °÷À¸·Î ÀÌµ¿
-		4. ¹Ýº¹
-		*/
-		d[s].first = 0; // ½ÃÀÛÁ¡Àº °Å¸® 0
+	// ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½Í½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ Å½ï¿½ï¿½
+	vector<pair<unsigned, unsigned>> dijkstra_path(unsigned s) { // sï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. (ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+		vector<bool> visited(v + 1, false); // ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		unsigned vert = s; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		visited[0] = true; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ Ç¥ï¿½ï¿½
+		d[s].first = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ 0
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ¾ÆÁ÷ ¹æ¹®ÇÏÁö ¾ÊÀº Á¤Á¡ÀÌ ³²¾ÆÀÖ´Â µ¿¾È
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ´ÙÀ½¿¡ ¹æ¹®ÇÒ Á¤Á¡ : (Á¤Á¡, °Å¸®)
+		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
+			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
 
-			visited[vert] = true; // Á¤Á¡ ¹æ¹®
-			vector<Edge<T>> v_edge = edges_from(vert);
+			visited[vert] = true; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®
+			vector<Edge<T>> v_edge = edges_from(vert); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 			for (auto& e : v_edge) {
-				if (d[vert].first + e.w < d[e.to].first) {
-					d[e.to].first = d[vert].first + e.w;
-					d[e.to].second = vert;
+				if (d[vert].first + e.w < d[e.to].first) { // ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+					d[e.to].first = d[vert].first + e.w; // ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+					d[e.to].second = vert; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 				}
 			}
 
 			for (unsigned i = 1; i <= v; i++)
-				next_visit.push(make_pair(i, d[i].first));
+				if (!visited[i])
+					next_visit.push(make_pair(i, d[i].first)); // ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ß°ï¿½
 
-			while (!next_visit.empty()) {
-				pair<unsigned, unsigned> next = next_visit.top(); // (Á¤Á¡, °Å¸®)
-				next_visit.pop();
-				if (!visited[next.first]) {
-					vert = next.first;
-					break;
-				}
-			}
+			pair<unsigned, unsigned> next = next_visit.top(); // (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
+			vert = next.first;
 		}
 
 		return d;
 	}
 
-	// ÀÀ¿ë : ´ÙÀÍ½ºÆ®¶ó °æ·Î Å½»ö - ¸ðµç °æ·Î Ç¥½Ã
-	vector<pair<unsigned, list<unsigned>>> dijkstra_fullpath(unsigned s) { // s´Â ½ÃÀÛÁ¡
-		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // ÀúÀå¿ë °Å¸® º¤ÅÍ. Á¤Á¡ ¹øÈ£°¡ 1ºÎÅÍ ½ÃÀÛÇÔ. (ÃÖ¼Ò ºñ¿ë °Å¸®, Á÷Àü °æ·Î Á¤Á¡)
-		vector<bool> visited(v + 1, false); // ¹æ¹® ¿©ºÎ ÃÊ±âÈ­
-		vector<pair<unsigned, list<unsigned>>> full_path(v + 1); // ¸ðµç °æ·Î Ç¥½Ã º¤ÅÍ : (°Å¸®, °æ·Î)
-		unsigned vert = s; // ÀÌÁ¦ ¹æ¹®ÇÒ Á¤Á¡ : ¾ÆÁ÷ ½ÃÀÛÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ½ÃÀÛÁ¡À¸·Î ÃÊ±âÈ­
-		visited[0] = true; // ¾È ¾²´Â ÀÎµ¦½º ¹æ¹®ÇÒ ÀÏ ¾ø°Ô ¹Ì¸® Ç¥½Ã
-		/*
-		1. ½ÃÀÛÁ¡ ¹æ¹®
-		2. °Å¸® ÆÄ¾Ç
-		3. °¡Àå °¡±î¿î °÷À¸·Î ÀÌµ¿
-		4. ¹Ýº¹
-		*/
-		d[s].first = 0; // ½ÃÀÛÁ¡Àº °Å¸® 0
+	// ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½Í½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ Å½ï¿½ï¿½ - ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½
+	vector<pair<unsigned, list<unsigned>>> dijkstra_fullpath(unsigned s) { // sï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. (ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+		vector<bool> visited(v + 1, false); // ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		vector<pair<unsigned, list<unsigned>>> full_path(v + 1); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : (ï¿½Å¸ï¿½, ï¿½ï¿½ï¿½)
+		unsigned vert = s; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+		visited[0] = true; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ Ç¥ï¿½ï¿½
+		d[s].first = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ 0
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ¾ÆÁ÷ ¹æ¹®ÇÏÁö ¾ÊÀº Á¤Á¡ÀÌ ³²¾ÆÀÖ´Â µ¿¾È
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ´ÙÀ½¿¡ ¹æ¹®ÇÒ Á¤Á¡ : (Á¤Á¡, °Å¸®)
+		while (find(visited.begin(), visited.end(), false) != visited.end()) { // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
+			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
 
-			visited[vert] = true; // Á¤Á¡ ¹æ¹®
-			vector<Edge<T>> v_edge = edges_from(vert);
+			visited[vert] = true; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®
+			vector<Edge<T>> v_edge = edges_from(vert); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 			for (auto& e : v_edge) {
-				if (d[vert].first + e.w < d[e.to].first) {
-					d[e.to].first = d[vert].first + e.w;
-					d[e.to].second = vert;
+				if (d[vert].first + e.w < d[e.to].first) { // ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+					d[e.to].first = d[vert].first + e.w; // ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+					d[e.to].second = vert; // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 				}
 			}
 
 			for (unsigned i = 1; i <= v; i++)
-				next_visit.push(make_pair(i, d[i].first));
+				if (!visited[i])
+					next_visit.push(make_pair(i, d[i].first)); // ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ß°ï¿½
 
-			while (!next_visit.empty()) {
-				pair<unsigned, unsigned> next = next_visit.top(); // (Á¤Á¡, °Å¸®)
-				next_visit.pop();
-				if (!visited[next.first]) {
-					vert = next.first;
-					break;
-				}
-			}
+			pair<unsigned, unsigned> next = next_visit.top(); // (ï¿½ï¿½ï¿½ï¿½, ï¿½Å¸ï¿½)
+			vert = next.first;
 		}
 
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¾Æ³ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ iï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sï¿½ï¿½ï¿½ï¿½ ï¿½Å½ï¿½ï¿½ï¿½ ï¿½Ã¶ó°¡´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å½ï¿½ï¿½
 		for (unsigned i = 1; i <= v; i++) {
-			unsigned dest = d[i].second;
-			full_path[i].first = d[i].first;
-			full_path[i].second.push_front(i);
-			while (dest != s) {
-				full_path[i].second.push_front(dest);
-				dest = d[dest].second;
+			unsigned dest = d[i].second; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ iï¿½ï¿½ Ã£ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½ï¿½Î»ó¿¡¼ï¿½, iï¿½ï¿½ ï¿½æ¹®ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			full_path[i].first = d[i].first; // sï¿½ï¿½ï¿½ï¿½ iï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½
+			full_path[i].second.push_front(i); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ i ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ß°ï¿½
+			while (dest != s) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+				full_path[i].second.push_front(dest); // ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Õ¿ï¿½ ï¿½ß°ï¿½
+				dest = d[dest].second; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			}
-			if (i != s)
+			if (i != s) // ï¿½ï¿½ï¿½ï¿½ ï¿½Ýºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¹®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½Ç±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î¿ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½Î¿ï¿½ ï¿½ß°ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½
 				full_path[i].second.push_front(s);
 		}
 
