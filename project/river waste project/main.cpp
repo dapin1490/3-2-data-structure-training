@@ -45,9 +45,13 @@ int main() {
 	//}
 
 	compl_system system;
-	system.system_on();
+	system.system_on(); // 정상 실행 확인함
 
-	system.receive_compl();
+	system.receive_compl(); // 정상 실행 확인함
+
+	// system.save_task(); // 정상 실행 확인함, 실행 후 데이터 파일이 변경되기 때문에 주석 처리
+
+	system.view_all(); // 정상 실행 확인함
 
 	input.close();
 	output.close();
