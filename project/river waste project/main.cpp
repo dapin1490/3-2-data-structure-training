@@ -52,6 +52,15 @@ int main() {
 	// system.save_task(); // 정상 실행 확인함, 실행 후 데이터 파일이 변경되기 때문에 주석 처리
 
 	system.view_all(); // 정상 실행 확인함
+	system.view_all(); // 정상 실행 확인함
+	system.view_all(); // 정상 실행 확인함
+	system.view_all(); // 정상 실행 확인함
+	system.view_all(); // 정상 실행 확인함
+
+	system.clear_compls(1); // 누적 민원 있음, 처리 수량 미달, 강제 처리
+	system.clear_compls(3); // 누적 민원 없음, 오류 처리 테스트
+
+	system.view_all();
 
 	input.close();
 	output.close();

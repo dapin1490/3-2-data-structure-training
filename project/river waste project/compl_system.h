@@ -3,13 +3,13 @@
 #include <iostream>
 #include <vector> // vector
 #include <utility> // pair
-#include <algorithm> // copy, equal, sort(예정)
+#include <algorithm> // copy, equal(미사용)
 #include <map> // multimap 참고 : https://blockdmask.tistory.com/88
 #include <io.h> // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
 #include <string> // to_string
 #include <fstream> // 파일 입출력
-#include <ctime>
-#include <sstream>
+#include <ctime> // 시간 데이터 관리
+#include <sstream> // 문자열 파싱
 using namespace std;
 
 // 행정동코드 출처 : https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000052&nttId=94196
@@ -40,9 +40,10 @@ string currentDateTime() {
 
 // C++ 에러 메시지 참고 : https://learn.microsoft.com/ko-kr/cpp/error-messages/compiler-errors-1/c-cpp-build-errors?view=msvc-170
 void error(_error code, string message="") {
-	if (message.length() > 1) {
-		output << "error message: " << message << "\n";
-	}
+	if (message.length() > 1)
+		output << "\nerror message: " << message << "\n";
+	else
+		output << "\n";
 
 	switch (code) {
 	case _error::shut_down:
@@ -129,7 +130,7 @@ public:
 	void update_wcnt(int num) { waste_cnt += num; } // 포함 쓰레기 종류 수 변경
 	// 민원 정보 출력
 	void print() {
-		output << "민원 파일명 : \"" << pic_name << "\"\n";
+		output << "\n민원 파일명 : \"" << pic_name << "\"\n";
 		if (is_valid_date == 0) {
 			char buffer[256];
 			//strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &comp_date);
@@ -145,41 +146,7 @@ public:
 			<< "   플라스틱 " << (wastes[1] == 0 ? 'X' : 'O')
 			<< "   캔 " << (wastes[2] == 0 ? 'X' : 'O')
 			<< "   유리 " << (wastes[3] == 0 ? 'X' : 'O')
-			<< "   종이 " << (wastes[4] == 0 ? 'X' : 'O') << "\n\n";
-	}
-};
-
-class accumed_compls { // 누적 민원 클래스
-private:
-	int waste_code; // 쓰레기 분류 번호
-	vector<complain*> compls; // 쓰레기 분류 번호에 따른 해당 쓰레기 관련 민원 벡터
-public:
-	accumed_compls() { waste_code = NULL; }; // 기본 생성자
-	accumed_compls(int wn) { // 생성자
-		waste_code = wn;
-	}
-
-	int get_num() { return waste_code; } // 쓰레기 분류 번호 반환
-	int get_compls_size() { return compls.size(); } // 민원 노드 벡터 길이(누적 민원 수) 반환
-
-	void add_compl(complain* new_comp) { compls.push_back(new_comp); } // 민원 추가
-	void clear_compls() { // 민원 처리(누적 민원 벡터를 clear하며, 개별 민원 중 2종류 이상의 쓰레기가 포함된 민원의 경우 쓰레기 포함 표기를 수정한 후 clear해야 한다.)
-		vector<complain*>::iterator i;
-
-		for (i = compls.begin(); i != compls.end(); i++) {
-			if ((*i)->get_wcnt() > 1) {
-				(*i)->update_wcnt(-1);
-				(*i)->wastes[waste_code] = 0;
-			}
-
-			if ((*i)->get_wcnt() == 0) {
-				complain* del_comp = (*i);
-				(*i) = nullptr;
-				delete del_comp;
-			}
-		}
-
-		compls.clear();
+			<< "   종이 " << (wastes[4] == 0 ? 'X' : 'O') << "\n";
 	}
 };
 
@@ -193,7 +160,7 @@ class compl_system { // 하천 쓰레기 민원 처리 시스템
 private:
 	pair<int, int> area_code; // 지역 코드(위도, 경도 정수 부분)
 	int thresh; // 민원 처리 최소 단위 : 누적된 민원의 수가 이 수보다 클 때 처리. 기본값은 20
-	accumed_compls compls_list[5]; // 쓰레기 분류별 누적 민원 배열
+	vector<vector<complain>> accumed_compls_list; // 쓰레기 분류별 누적 민원 배열
 
 	vector<complain> all_compls; // 전체 민원 벡터
 	multimap<string, complain> map_comp; // 사진 이름 기준 전체 민원 멀티맵
@@ -203,21 +170,24 @@ private:
 	multimap<time_t, complain> map_cdate_back; // 민원 접수 날짜 기준(오래된순) 전체 민원 멀티맵
 	// 맵 내림차순(greater) 참고 : https://0xd00d00.github.io/2021/08/22/map_value_reverse.html
 
-	bool is_same(complain& a, complain& b) {
+	bool is_same(complain& a, complain& b) { // 사진 이름과 민원 날짜를 기본키로 사용하기로 함
 		if (a.get_name() != b.get_name())
 			return false;
 
+		/*// 삭제 연산에서 이 함수를 호출하는데, 한 쪽은 이미 쓰레기를 처리했다고 데이터를 업데이트 했고 다른 쪽은 업데이트가 안 된 상태로 와서 이걸 비교하면 당연히 다름
 		if (a.get_wcnt() != b.get_wcnt())
-			return false;
+			return false;*/
 
+		/*// 실수 비교가 제대로 될 거라고 기대하면 안 됨
+		// 아직까지 대안 없음
 		auto a_codi = a.get_codi();
 		auto b_codi = b.get_codi();
 		if (a_codi.first != b_codi.first || a_codi.second != b_codi.second)
-			return false;
+			return false;*/
 
-		// 참고 : https://torbjorn.tistory.com/357
-		if (!equal(a.wastes, a.wastes + 5, b.wastes, b.wastes + 5))
-			return false;
+		//// 참고 : https://torbjorn.tistory.com/357
+		//if (!equal(a.wastes, a.wastes + 5, b.wastes, b.wastes + 5))
+		//	return false;
 
 		time_t a_raw = a.get_date();
 		tm a_tm;
@@ -234,13 +204,13 @@ private:
 	// 미확인
 	// 특정 분류의 쓰레기 민원이 충분히 많아 처리해도 될만한지 확인
 	bool is_enough(int waste_code) {
-		if (compls_list[waste_code].get_compls_size() >= thresh)
+		if (accumed_compls_list[waste_code].size() >= thresh)
 			return true;
 		return false;
 	}
 
 	void view_all(multimap<string, complain>& mc) {
-		output << "사진 이름순으로 모든 민원을 조회합니다.\n";
+		output << "\n사진 이름순으로 모든 민원을 조회합니다.\n";
 
 		char ans = 'Y';
 		auto iter = mc.begin();
@@ -271,31 +241,117 @@ private:
 		output << "조회를 종료합니다.\n";
 	}
 	void view_all(multimap<double, complain> ml, int code) {
+		char ans = 'Y';
+		auto iter = ml.begin();
+		int total = 1;
+		int ml_len = ml.size();
+
 		if (code == 1) {
-			output << "called view latitude map\n";
+			output << "\n경도순으로 모든 민원을 조회합니다.\n";
 		}
 		else if (code == 2) {
-			output << "called view longitude map\n";
+			output << "\n위도순으로 모든 민원을 조회합니다.\n";
 		}
 		else {
-			output << "called view coordinate maps but wrong code\n";
+			output << "경도/위도순 정렬을 호출했지만 코드가 잘못되었습니다. 조회를 종료합니다.\n";
 			return;
 		}
+
+		output << "총 민원 수 : " << ml_len << "\n\n";
+
+		while (iter != ml.end() && ans != 'N') {
+			int cnt = 1;
+			for (iter; iter != ml.end() && cnt < 20; iter++, cnt++, total++) {
+				output << total << "/" << ml_len << "\n";
+				iter->second.print();
+			}
+
+			if (ml_len - total > 0) {
+				output << "남은 민원 " << ml_len - total << "개\n";
+				output << "더 보기 Y / N\n";
+				input >> ans;
+			}
+			else {
+				output << "남은 민원 0개\n";
+				output << "모든 민원을 조회하였습니다. ";
+				break;
+			}
+		}
+
+		output << "조회를 종료합니다.\n";
 	}
 	void view_all(multimap<time_t, complain, greater<time_t>> mcf) {
-		output << "called view cdate front map\n";
+		output << "\n민원 날짜 오름차순으로 모든 민원을 조회합니다.\n";
+
+		char ans = 'Y';
+		auto iter = mcf.begin();
+		int total = 1;
+		int mcf_len = mcf.size();
+
+		output << "총 민원 수 : " << mcf_len << "\n\n";
+
+		while (iter != mcf.end() && ans != 'N') {
+			int cnt = 1;
+			for (iter; iter != mcf.end() && cnt < 20; iter++, cnt++, total++) {
+				output << total << "/" << mcf_len << "\n";
+				iter->second.print();
+			}
+
+			if (mcf_len - total > 0) {
+				output << "남은 민원 " << mcf_len - total << "개\n";
+				output << "더 보기 Y / N\n";
+				input >> ans;
+			}
+			else {
+				output << "남은 민원 0개\n";
+				output << "모든 민원을 조회하였습니다. ";
+				break;
+			}
+		}
+
+		output << "조회를 종료합니다.\n";
 	}
 	void view_all(multimap<time_t, complain> mcb) {
-		output << "called view cdate back map\n";
+		output << "\n민원 날짜 내림차순으로 모든 민원을 조회합니다.\n";
+
+		char ans = 'Y';
+		auto iter = mcb.begin();
+		int total = 1;
+		int mcb_len = mcb.size();
+
+		output << "총 민원 수 : " << mcb_len << "\n\n";
+
+		while (iter != mcb.end() && ans != 'N') {
+			int cnt = 1;
+			for (iter; iter != mcb.end() && cnt < 20; iter++, cnt++, total++) {
+				output << total << "/" << mcb_len << "\n";
+				iter->second.print();
+			}
+
+			if (mcb_len - total > 0) {
+				output << "남은 민원 " << mcb_len - total << "개\n";
+				output << "더 보기 Y / N\n";
+				input >> ans;
+			}
+			else {
+				output << "남은 민원 0개\n";
+				output << "모든 민원을 조회하였습니다. ";
+				break;
+			}
+		}
+
+		output << "조회를 종료합니다.\n";
 	}
 public:
-	compl_system() { area_code = make_pair(NULL, NULL); thresh = 20; } // 기본 생성자
+	compl_system() { // 기본 생성자
+		area_code = make_pair(NULL, NULL);
+		thresh = 20;
+		accumed_compls_list.resize(5);
+	}
 	compl_system(int x, int y) { // 생성자
 		area_code = make_pair(x, y);
-		for (int i = 0; i < 5; i++) {
-			compls_list[i] = accumed_compls(i);
-		}
 		thresh = 20;
+		accumed_compls_list.resize(5);
 	}
 
 	pair<int, int> get_acode() { return area_code; }
@@ -309,7 +365,7 @@ public:
 		bool is_file_valuable;
 		char is_load_save;
 
-		output << "하천 쓰레기 민원 처리 시스템을 시작합니다. 관할 구역의 위도와 경도 정수 부분을 공백으로 구분하여 입력해 주세요.\n";
+		output << "\n하천 쓰레기 민원 처리 시스템을 시작합니다. 관할 구역의 위도와 경도 정수 부분을 공백으로 구분하여 입력해 주세요.\n";
 		input >> acode.first >> acode.second;
 		output << "입력된 코드는 (" << acode.first << ", " << acode.second << ")입니다.\n";
 
@@ -373,7 +429,7 @@ public:
 		string waiting_file_route = root + "data/waiting list.csv";
 
 		while (ans != 'Y') {
-			output << "새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
+			output << "\n새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
 			input >> pn;
 
 			output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
@@ -433,7 +489,7 @@ public:
 			case 0:
 				continue;
 			default:
-				this->compls_list[i].add_compl(&new_comp);
+				accumed_compls_list[i].push_back(new_comp);
 			}
 		}
 
@@ -448,7 +504,7 @@ public:
 		// 가능한 정렬 기준 : 사진 이름 오름차순, 위도 오름차순, 경도 오름차순, 접수 날짜 오름차순/내림차순
 		// 맵 사용
 		int ans;
-		output << "접수된 모든 민원을 조회합니다. 정렬 기준을 숫자로 선택해 주세요.\n1. 사진 이름\n2. 위도\n3. 경도\n4. 접수 일자 오름차순\n5. 접수 일자 내림차순\n";
+		output << "\n접수된 모든 민원을 조회합니다. 정렬 기준을 숫자로 선택해 주세요.\n1. 사진 이름\n2. 위도\n3. 경도\n4. 접수 일자 오름차순\n5. 접수 일자 내림차순\n";
 		input >> ans;
 
 		switch (ans) {
@@ -464,6 +520,7 @@ public:
 		return;
 	}
 
+	/*// 우선순위 최하위. 구현하지 않을 가능성 높음
 	// 미확인
 	// 검색 기준(search_by)에 따른 특정 민원 검색
 	void search_compl() {
@@ -471,12 +528,20 @@ public:
 		// 벡터 정렬 후 순회
 		return;
 	}
+	*/
 
 	// 미확인
 	// 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
+	void clear_compls() {
+		output << "\n누적 민원 처리를 요청합니다. 처리할 쓰레기 코드를 숫자로 입력해 주세요.\n0. 일반\n1. 플라스틱\n2. 캔\n3. 유리\n4. 종이\n";
+		int code;
+		input >> code;
+		clear_compls(code);
+		return;
+	}
 	void clear_compls(int waste_code) {
 		// 벡터에서 NULL 지우기 참고 : https://cho001.tistory.com/164
-		output << "처리 요청 쓰레기 코드 : " << waste_code << "\n";
+		output << "\n처리 요청 쓰레기 코드 : " << waste_code << "\n";
 		if (!is_enough(waste_code)) {
 			output << "누적된 민원의 수가 최소 처리 단위보다 적습니다. 그래도 처리하시겠습니까? Y / N\n";
 			char ans;
@@ -487,39 +552,91 @@ public:
 			}
 		}
 
-		compls_list[waste_code].clear_compls();
+		accumed_compls_list[waste_code].clear();
 
-		for (complain& e : all_compls) {
-			if (e.get_wcnt() == 0) {
-				auto mc = map_comp.find(e.get_name());
-				for (mc; mc != map_comp.end(); mc++) {
-					if (compl_system::is_same(e, mc->second))
-						map_comp.erase(mc);
-				}
+		for (complain e : all_compls) {
+			bool updated = false;
+			if (e.wastes[waste_code] > 0) {
+				e.update_wcnt(-1);
+				e.wastes[waste_code] = 0;
+				updated = true;
+			}
 
-				auto ml = map_latitude.find(e.get_codi().first);
-				for (ml; ml != map_latitude.end(); ml++) {
-					if (compl_system::is_same(e, ml->second))
-						map_latitude.erase(ml);
+			// 연관 컨테이너 반복자 이용해 삭제할 때 주의 : https://wordbe.tistory.com/entry/STL-erase
+			auto mc = map_comp.find(e.get_name());
+			for (mc; mc != map_comp.end();) {
+				if (compl_system::is_same(e, mc->second)) {
+					if (e.get_wcnt() == 0) {
+						map_comp.erase(mc++);
+					}
+					else {
+						if (updated)
+							mc->second = e;
+						mc++;
+					}
 				}
+				else
+					mc++;
+			}
 
-				auto ml2 = map_longitude.find(e.get_codi().second);
-				for (ml2; ml2 != map_longitude.end(); ml2++) {
-					if (compl_system::is_same(e, ml2->second))
-						map_latitude.erase(ml2);
-				}
+			auto ml = map_latitude.find(e.get_codi().first);
+			for (ml; ml != map_latitude.end();) {
+				if (compl_system::is_same(e, ml->second))
+					if (e.get_wcnt() == 0) {
+						map_latitude.erase(ml++);
+					}
+					else {
+						if (updated)
+							ml->second = e;
+						ml++;
+					}
+				else
+					ml++;
+			}
 
-				auto mcf = map_cdate_front.find(e.get_date());
-				for (mcf; mcf != map_cdate_front.end(); mcf++) {
-					if (compl_system::is_same(e, mcf->second))
-						map_cdate_front.erase(mcf);
-				}
+			auto ml2 = map_longitude.find(e.get_codi().second);
+			for (ml2; ml2 != map_longitude.end();) {
+				if (compl_system::is_same(e, ml2->second))
+					if (e.get_wcnt() == 0) {
+						map_longitude.erase(ml2++);
+					}
+					else {
+						if (updated)
+							ml2->second = e;
+						ml2++;
+					}
+				else
+					ml2++;
+			}
 
-				auto mcb = map_cdate_back.find(e.get_date());
-				for (mcb; mcb != map_cdate_front.end(); mcb++) {
-					if (compl_system::is_same(e, mcb->second))
-						map_cdate_front.erase(mcb);
-				}
+			auto mcf = map_cdate_front.find(e.get_date());
+			for (mcf; mcf != map_cdate_front.end();) {
+				if (compl_system::is_same(e, mcf->second))
+					if (e.get_wcnt() == 0) {
+						map_cdate_front.erase(mcf++);
+					}
+					else {
+						if (updated)
+							mcf->second = e;
+						mcf++;
+					}
+				else
+					mcf++;
+			}
+
+			auto mcb = map_cdate_back.find(e.get_date());
+			for (mcb; mcb != map_cdate_back.end();) {
+				if (compl_system::is_same(e, mcb->second))
+					if (e.get_wcnt() == 0) {
+						map_cdate_back.erase(mcb++);
+					}
+					else {
+						if (updated)
+							mcb->second = e;
+						mcb++;
+					}
+				else
+					mcb++;
 			}
 		}
 
@@ -541,7 +658,7 @@ public:
 		int waste_cnt;
 		int wastes[5];
 
-		output << "start loading...\n";
+		output << "\nstart loading...\n";
 
 		while (!data_file.eof()) {
 			string line;
@@ -588,7 +705,7 @@ public:
 				case 0:
 					continue;
 				default:
-					this->compls_list[i].add_compl(&cp);
+					accumed_compls_list[i].push_back(cp);
 				}
 			}
 		}
@@ -605,7 +722,7 @@ public:
 
 		// 사진이름,날짜8자리,위도,경도,쓰레기수,각 쓰레기 여부
 
-		output << "업무 기록을 저장합니다...\n";
+		output << "\n업무 기록을 저장합니다...\n";
 
 		for (auto i : all_compls) {
 			save_file << i.get_name() << ","; // 사진 이름 파일에 입력
