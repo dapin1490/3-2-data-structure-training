@@ -9,26 +9,32 @@
 #include "compl_system.h"
 using namespace std;
 
-//string currentDateTime() {
-//	time_t t = time(nullptr);
-//	tm now;
-//	errno_t is_error = localtime_s(&now, &t);
-//
-//	if (is_error == 0) {
-//		char buffer[256];
-//		strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &now);
-//		return buffer;
-//	}
-//	else {
-//		return "현재 시간을 얻을 수 없음";
-//	}
-//}
+string currentDateTime() {
+	time_t t = time(nullptr);
+	tm now;
+	errno_t is_error = localtime_s(&now, &t);
+
+	if (is_error == 0) {
+		char buffer[256];
+		strftime(buffer, sizeof(buffer), "%Y-%m-%d %X", &now);
+		return buffer;
+	}
+	else {
+		return "현재 시간을 얻을 수 없음";
+	}
+}
 
 int main() {
 	// 빠른 입출력
 	ios::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
 
+	// 코드 실행 시간 측정 : https://scarlettb.tistory.com/5
+	clock_t clock_start, clock_finish;
+	double clock_duration;
+
 	output << "main.cpp 실행 시각 : " << currentDateTime() << "\n\n";
+
+	clock_start = clock();
 
 	//// 참고 : https://cplusplus.com/reference/ctime/mktime/
 	//time_t rawtime = time(&rawtime);
@@ -57,12 +63,19 @@ int main() {
 	system.view_all(); // 정상 실행 확인함
 	system.view_all(); // 정상 실행 확인함
 
-	system.clear_compls(1); // 누적 민원 있음, 처리 수량 미달, 강제 처리
-	system.clear_compls(3); // 누적 민원 없음, 오류 처리 테스트
+	system.clear_compls(); // 코드 1 : 누적 민원 있음, 처리 수량 미달, 강제 처리
+	system.clear_compls(); // 코드 3 : 누적 민원 없음, 오류 처리 테스트
 
 	system.view_all();
 
+	clock_finish = clock();
+
+	// clock_duration = (double)(clock_finish - clock_start) / CLOCKS_PER_SEC; // 초 단위로 환산
+	clock_duration = (double)(clock_finish - clock_start);
+	output << "\n프로그램 실행 시간 : " << clock_duration << "ms\n";
+
 	input.close();
 	output.close();
+
 	return 0;
 }

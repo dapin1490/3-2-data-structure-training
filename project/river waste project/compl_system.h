@@ -16,13 +16,14 @@ using namespace std;
 
 enum class _error : int{shut_down, ValueErrorInt, ValueErrorChar, UnknownError};
 
-const string root = "C:/Users/dpgbu/Desktop/SAE/tool/github desktop/3-2-data-structure-training/project/river waste project/";
+const string root = "../../../github desktop/3-2-data-structure-training/project/river waste project/";
 const string intxt = root + "data/input.txt";
 const string outtxt = root + "data/output.txt";
 
 extern ifstream input{ intxt };
 extern ofstream output{ outtxt };
 
+/*
 string currentDateTime() {
 	time_t t = time(nullptr);
 	tm now;
@@ -37,6 +38,7 @@ string currentDateTime() {
 		return "현재 시간을 얻을 수 없음";
 	}
 }
+*/
 
 // C++ 에러 메시지 참고 : https://learn.microsoft.com/ko-kr/cpp/error-messages/compiler-errors-1/c-cpp-build-errors?view=msvc-170
 void error(_error code, string message="") {
@@ -159,7 +161,7 @@ bool is_wcnt_zero(complain c) {
 class compl_system { // 하천 쓰레기 민원 처리 시스템
 private:
 	pair<int, int> area_code; // 지역 코드(위도, 경도 정수 부분)
-	int thresh; // 민원 처리 최소 단위 : 누적된 민원의 수가 이 수보다 클 때 처리. 기본값은 20
+	unsigned thresh; // 민원 처리 최소 단위 : 누적된 민원의 수가 이 수보다 클 때 처리. 기본값은 20
 	vector<vector<complain>> accumed_compls_list; // 쓰레기 분류별 누적 민원 배열
 
 	vector<complain> all_compls; // 전체 민원 벡터
@@ -170,7 +172,8 @@ private:
 	multimap<time_t, complain> map_cdate_back; // 민원 접수 날짜 기준(오래된순) 전체 민원 멀티맵
 	// 맵 내림차순(greater) 참고 : https://0xd00d00.github.io/2021/08/22/map_value_reverse.html
 
-	bool is_same(complain& a, complain& b) { // 사진 이름과 민원 날짜를 기본키로 사용하기로 함
+	// 사진 이름과 민원 날짜를 기본키로 사용하기로 함
+	bool is_same(complain& a, complain& b) {
 		if (a.get_name() != b.get_name())
 			return false;
 
@@ -201,14 +204,15 @@ private:
 		return true;
 	}
 
-	// 미확인
+	// 정상 실행 확인
 	// 특정 분류의 쓰레기 민원이 충분히 많아 처리해도 될만한지 확인
 	bool is_enough(int waste_code) {
 		if (accumed_compls_list[waste_code].size() >= thresh)
 			return true;
 		return false;
 	}
-
+	
+	// 사진 이름순 모든 민원 조회
 	void view_all(multimap<string, complain>& mc) {
 		output << "\n사진 이름순으로 모든 민원을 조회합니다.\n";
 
@@ -240,6 +244,7 @@ private:
 
 		output << "조회를 종료합니다.\n";
 	}
+	// 위도, 경도순 모든 민원 조회
 	void view_all(multimap<double, complain> ml, int code) {
 		char ans = 'Y';
 		auto iter = ml.begin();
@@ -247,10 +252,10 @@ private:
 		int ml_len = ml.size();
 
 		if (code == 1) {
-			output << "\n경도순으로 모든 민원을 조회합니다.\n";
+			output << "\n위도순으로 모든 민원을 조회합니다.\n";
 		}
 		else if (code == 2) {
-			output << "\n위도순으로 모든 민원을 조회합니다.\n";
+			output << "\n경도순으로 모든 민원을 조회합니다.\n";
 		}
 		else {
 			output << "경도/위도순 정렬을 호출했지만 코드가 잘못되었습니다. 조회를 종료합니다.\n";
@@ -280,6 +285,7 @@ private:
 
 		output << "조회를 종료합니다.\n";
 	}
+	// 민원 날짜 오름차순 조회
 	void view_all(multimap<time_t, complain, greater<time_t>> mcf) {
 		output << "\n민원 날짜 오름차순으로 모든 민원을 조회합니다.\n";
 
@@ -311,6 +317,7 @@ private:
 
 		output << "조회를 종료합니다.\n";
 	}
+	// 민원 날짜 내림차순 조회
 	void view_all(multimap<time_t, complain> mcb) {
 		output << "\n민원 날짜 내림차순으로 모든 민원을 조회합니다.\n";
 
@@ -342,203 +349,8 @@ private:
 
 		output << "조회를 종료합니다.\n";
 	}
-public:
-	compl_system() { // 기본 생성자
-		area_code = make_pair(NULL, NULL);
-		thresh = 20;
-		accumed_compls_list.resize(5);
-	}
-	compl_system(int x, int y) { // 생성자
-		area_code = make_pair(x, y);
-		thresh = 20;
-		accumed_compls_list.resize(5);
-	}
 
-	pair<int, int> get_acode() { return area_code; }
-	void set_thresh(int n) { thresh = n; }
-
-	// 정상 실행 확인됨
-	// 시스템 시작 : 사용자에게 지역 코드를 입력받고 기존 데이터 유무 확인, 새 로그 생성 등
-	void system_on() {
-		pair<int, int> acode;
-		string file_route;
-		bool is_file_valuable;
-		char is_load_save;
-
-		output << "\n하천 쓰레기 민원 처리 시스템을 시작합니다. 관할 구역의 위도와 경도 정수 부분을 공백으로 구분하여 입력해 주세요.\n";
-		input >> acode.first >> acode.second;
-		output << "입력된 코드는 (" << acode.first << ", " << acode.second << ")입니다.\n";
-
-		this->area_code = acode;
-		file_route = root + "data/" + to_string(acode.first) + "_" + to_string(acode.second) + ".csv";
-		is_file_valuable = _access(file_route.c_str(), 0) != -1;
-
-		if (is_file_valuable) { // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
-			// 기존 데이터 파일 존재함
-			output << "기존 데이터가 존재합니다. 불러오시겠습니까? Y / N\n";
-			input >> is_load_save;
-			output << "입력된 값은 " << is_load_save << "입니다.\n";
-
-			if (is_load_save == 'N') { // 기존 데이터 불러오지 않기
-				output << "계속하기를 선택하면 기존의 데이터가 모두 소실됩니다. 계속하시겠습니까? Y / N\n";
-				input >> is_load_save;
-				output << "입력된 값은 " << is_load_save << "입니다.\n";
-
-				switch (is_load_save) {
-				case 'Y': // 기존 데이터 무시하고 새 데이터 생성 진행
-					is_load_save = 'N';
-					break;
-				case 'N': // 기존 데이터 사용하기로 함
-					is_load_save = 'Y';
-					break;
-				default: // 이상한 대답 하면 나도 안 해 던져
-					error(_error::shut_down, "잘못된 입력: 'Y' 또는 'N'만 입력할 수 있습니다.");
-				}
-			}
-
-			if (is_load_save == 'Y') { // 기존 데이터 불러오기
-				this->load_save();
-			}
-		}
-		else if (!is_file_valuable) { // 기존 데이터 파일 존재하지 않음
-			// 새 세이브 파일 만들고 메소드 종료
-			// 참고 : https://homzzang.com/b/cpp-34
-			ofstream new_save(file_route);
-			new_save.close();
-			return;
-		}
-
-		if (is_file_valuable && is_load_save == 'N') {
-			// 기존 데이터 파일 존재하지만 사용자가 기존의 데이터를 불러오지 않기로 했음
-			// 세이브 파일은 있으나 로드할 세이브가 없으므로 메소드 종료.
-			return;
-		}
-	}
-
-	// 정상 실행 확인됨
-	// 민원 접수
-	void receive_compl() {
-		complain new_comp;
-		string word;
-		string pn; // 사진 이름(필요시 절대/상대 파일 경로 포함, 사진 크기를 비롯해 사진 파일 자체에 대한 각종 정보는 원본 파일의 정보에 포함된다고 본다)
-		int cdate; // 민원 신고 날짜
-		double x, y; // 사진 좌표
-		int wcnt; // 포함된 쓰레기의 종류 수
-		string ws;
-		char ans = 'N';
-		string waiting_file_route = root + "data/waiting list.csv";
-
-		while (ans != 'Y') {
-			output << "\n새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
-			input >> pn;
-
-			output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
-			input >> word;
-			cdate = stoi(word);
-
-			output << "신고 위치(위도, 경도)를 공백으로 구분하여 입력해 주세요.\n";
-			input >> word;
-			x = stod(word);
-			input >> word;
-			y = stod(word);
-
-			output << "신고할 쓰레기의 종류 수를 입력해 주세요.\n";
-			input >> word;
-			wcnt = stoi(word);
-
-			output << "분류별 쓰레기 포함 여부를 공백 없이 다섯 자리 숫자로 입력해 주세요.\n";
-			input >> ws;
-
-			new_comp = complain(pn, cdate, x, y, wcnt, ws);
-
-			output << "민원 정보 입력이 완료되었습니다. 입력한 정보를 다시 확인해 주세요.\n\n";
-			new_comp.print();
-
-			output << "이 정보로 계속하시겠습니까? Y / N\n";
-			input >> ans;
-		}
-
-		if (int(x) != this->area_code.first || int(y) != this->area_code.second) {
-			output << "해당 민원은 관할 구역에 위치하지 않습니다. 승인 대기 목록에 추가합니다.\n";
-
-			// 참고 : https://blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=sea5727&logNo=220978963342
-			fstream file;
-			file.open(waiting_file_route, ios::app);
-
-			file << pn << "," << cdate << "," << x << "," << y << "," << wcnt << ",";
-			for (int i = 0; i < 5; i++) {
-				file << ws.at(i) << (i < 4 ? "," : "");
-			}
-
-			file.close();
-
-			return;
-		}
-
-		output << "민원을 접수 중입니다...\n";
-
-		this->all_compls.push_back(new_comp);
-		this->map_comp.insert(make_pair(new_comp.get_name(), new_comp));
-		this->map_latitude.emplace(new_comp.get_codi().first, new_comp);
-		this->map_longitude.emplace(new_comp.get_codi().second, new_comp);
-		this->map_cdate_front.emplace(new_comp.get_date(), new_comp);
-		this->map_cdate_back.emplace(new_comp.get_date(), new_comp);
-
-		for (int i = 0; i < 5; i++) {
-			switch (new_comp.wastes[i]) {
-			case 0:
-				continue;
-			default:
-				accumed_compls_list[i].push_back(new_comp);
-			}
-		}
-
-		output << "민원이 접수되었습니다.\n";
-
-		return;
-	}
-
-	// 미확인
-	// 정렬 기준(sort_by)에 따른 전체 민원 조회(출력하게 할 것이므로 반환값 없음)
-	void view_all() {
-		// 가능한 정렬 기준 : 사진 이름 오름차순, 위도 오름차순, 경도 오름차순, 접수 날짜 오름차순/내림차순
-		// 맵 사용
-		int ans;
-		output << "\n접수된 모든 민원을 조회합니다. 정렬 기준을 숫자로 선택해 주세요.\n1. 사진 이름\n2. 위도\n3. 경도\n4. 접수 일자 오름차순\n5. 접수 일자 내림차순\n";
-		input >> ans;
-
-		switch (ans) {
-		case 1: output << "선택한 값은 '1. 사진 이름'입니다.\n"; view_all(map_comp); break;
-		case 2: output << "선택한 값은 '2. 위도'입니다.\n"; view_all(map_latitude, 1); break;
-		case 3: output << "선택한 값은 '3. 경도'입니다.\n"; view_all(map_longitude, 2); break;
-		case 4: output << "선택한 값은 '4. 접수 일자 오름차순'입니다.\n"; view_all(map_cdate_front); break;
-		case 5: output << "선택한 값은 '5. 접수 일자 내림차순'입니다.\n"; view_all(map_cdate_back); break;
-		default:
-			output << "잘못된 입력입니다. 조회를 종료합니다.\n";
-		}
-
-		return;
-	}
-
-	/*// 우선순위 최하위. 구현하지 않을 가능성 높음
-	// 미확인
-	// 검색 기준(search_by)에 따른 특정 민원 검색
-	void search_compl() {
-		// 가능한 검색 기준 : 사진 이름(오타 불허), 위도, 경도, 접수 날짜
-		// 벡터 정렬 후 순회
-		return;
-	}
-	*/
-
-	// 미확인
-	// 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
-	void clear_compls() {
-		output << "\n누적 민원 처리를 요청합니다. 처리할 쓰레기 코드를 숫자로 입력해 주세요.\n0. 일반\n1. 플라스틱\n2. 캔\n3. 유리\n4. 종이\n";
-		int code;
-		input >> code;
-		clear_compls(code);
-		return;
-	}
+	// 누적 민원 처리
 	void clear_compls(int waste_code) {
 		// 벡터에서 NULL 지우기 참고 : https://cho001.tistory.com/164
 		output << "\n처리 요청 쓰레기 코드 : " << waste_code << "\n";
@@ -551,6 +363,8 @@ public:
 				return;
 			}
 		}
+
+		output << "처리를 시작합니다...\n";
 
 		accumed_compls_list[waste_code].clear();
 
@@ -643,6 +457,204 @@ public:
 		// 참고 : https://cho001.tistory.com/164
 		all_compls.erase(remove_if(all_compls.begin(), all_compls.end(), ::is_wcnt_zero), all_compls.end());
 
+		output << "처리가 완료되었습니다.\n";
+
+		return;
+	}
+public:
+	compl_system() { // 기본 생성자
+		area_code = make_pair(NULL, NULL);
+		thresh = 20;
+		accumed_compls_list.resize(5);
+	}
+	compl_system(int x, int y) { // 생성자
+		area_code = make_pair(x, y);
+		thresh = 20;
+		accumed_compls_list.resize(5);
+	}
+
+	pair<int, int> get_acode() { return area_code; }
+	void set_thresh(int n) { thresh = n; }
+
+	// 정상 실행 확인
+	// 시스템 시작 : 사용자에게 지역 코드를 입력받고 기존 데이터 유무 확인, 새 로그 생성 등
+	void system_on() {
+		pair<int, int> acode;
+		string file_route;
+		bool is_file_valuable;
+		char is_load_save;
+
+		output << "\n하천 쓰레기 민원 처리 시스템을 시작합니다. 관할 구역의 위도와 경도 정수 부분을 공백으로 구분하여 입력해 주세요.\n";
+		input >> acode.first >> acode.second;
+		output << "입력된 코드는 (" << acode.first << ", " << acode.second << ")입니다.\n";
+
+		this->area_code = acode;
+		file_route = root + "data/" + to_string(acode.first) + "_" + to_string(acode.second) + ".csv";
+		is_file_valuable = _access(file_route.c_str(), 0) != -1;
+
+		if (is_file_valuable) { // 파일 존재 확인 참고 : https://tw0226.tistory.com/121
+			// 기존 데이터 파일 존재함
+			output << "기존 데이터가 존재합니다. 불러오시겠습니까? Y / N\n";
+			input >> is_load_save;
+			output << "입력된 값은 " << is_load_save << "입니다.\n";
+
+			if (is_load_save == 'N') { // 기존 데이터 불러오지 않기
+				output << "계속하기를 선택하면 기존의 데이터가 모두 소실됩니다. 계속하시겠습니까? Y / N\n";
+				input >> is_load_save;
+				output << "입력된 값은 " << is_load_save << "입니다.\n";
+
+				switch (is_load_save) {
+				case 'Y': // 기존 데이터 무시하고 새 데이터 생성 진행
+					is_load_save = 'N';
+					break;
+				case 'N': // 기존 데이터 사용하기로 함
+					is_load_save = 'Y';
+					break;
+				default: // 이상한 대답 하면 나도 안 해 던져
+					error(_error::shut_down, "잘못된 입력: 'Y' 또는 'N'만 입력할 수 있습니다.");
+				}
+			}
+
+			if (is_load_save == 'Y') { // 기존 데이터 불러오기
+				this->load_save();
+			}
+		}
+		else if (!is_file_valuable) { // 기존 데이터 파일 존재하지 않음
+			// 새 세이브 파일 만들고 메소드 종료
+			// 참고 : https://homzzang.com/b/cpp-34
+			ofstream new_save(file_route);
+			new_save.close();
+			return;
+		}
+
+		if (is_file_valuable && is_load_save == 'N') {
+			// 기존 데이터 파일 존재하지만 사용자가 기존의 데이터를 불러오지 않기로 했음
+			// 세이브 파일은 있으나 로드할 세이브가 없으므로 메소드 종료.
+			return;
+		}
+	}
+
+	// 정상 실행 확인
+	// 민원 접수
+	void receive_compl() {
+		complain new_comp;
+		string word;
+		string pn; // 사진 이름(필요시 절대/상대 파일 경로 포함, 사진 크기를 비롯해 사진 파일 자체에 대한 각종 정보는 원본 파일의 정보에 포함된다고 본다)
+		int cdate; // 민원 신고 날짜
+		double x, y; // 사진 좌표
+		int wcnt; // 포함된 쓰레기의 종류 수
+		string ws;
+		char ans = 'N';
+		string waiting_file_route = root + "data/waiting list.csv";
+
+		while (ans != 'Y') {
+			output << "\n새 민원을 입력합니다. 민원명(파일명)을 입력해 주세요.\n";
+			input >> pn;
+
+			output << "민원 신고 날짜를 8자리 숫자로 입력해 주세요.\n";
+			input >> word;
+			cdate = stoi(word);
+
+			output << "신고 위치(위도, 경도)를 공백으로 구분하여 입력해 주세요.\n";
+			input >> word;
+			x = stod(word);
+			input >> word;
+			y = stod(word);
+
+			output << "신고할 쓰레기의 종류 수를 입력해 주세요.\n";
+			input >> word;
+			wcnt = stoi(word);
+
+			output << "분류별 쓰레기 포함 여부를 공백 없이 다섯 자리 숫자로 입력해 주세요.\n";
+			input >> ws;
+
+			new_comp = complain(pn, cdate, x, y, wcnt, ws);
+
+			output << "민원 정보 입력이 완료되었습니다. 입력한 정보를 다시 확인해 주세요.\n\n";
+			new_comp.print();
+
+			output << "이 정보로 계속하시겠습니까? Y / N\n";
+			input >> ans;
+		}
+
+		if (int(x) != this->area_code.first || int(y) != this->area_code.second) {
+			output << "해당 민원은 관할 구역에 위치하지 않습니다. 승인 대기 목록에 추가합니다.\n";
+
+			// 참고 : https://blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=sea5727&logNo=220978963342
+			fstream file;
+			file.open(waiting_file_route, ios::app);
+
+			file << pn << "," << cdate << "," << x << "," << y << "," << wcnt << ",";
+			for (int i = 0; i < 5; i++) {
+				file << ws.at(i) << (i < 4 ? "," : "");
+			}
+
+			file.close();
+
+			return;
+		}
+
+		output << "민원을 접수 중입니다...\n";
+
+		this->all_compls.push_back(new_comp);
+		this->map_comp.insert(make_pair(new_comp.get_name(), new_comp));
+		this->map_latitude.emplace(new_comp.get_codi().first, new_comp);
+		this->map_longitude.emplace(new_comp.get_codi().second, new_comp);
+		this->map_cdate_front.emplace(new_comp.get_date(), new_comp);
+		this->map_cdate_back.emplace(new_comp.get_date(), new_comp);
+
+		for (int i = 0; i < 5; i++) {
+			switch (new_comp.wastes[i]) {
+			case 0:
+				continue;
+			default:
+				accumed_compls_list[i].push_back(new_comp);
+			}
+		}
+
+		output << "민원이 접수되었습니다.\n";
+
+		return;
+	}
+
+	// 기본 실행 확인
+	// 정렬 기준(sort_by)에 따른 전체 민원 조회(출력하게 할 것이므로 반환값 없음)
+	void view_all() {
+		// 가능한 정렬 기준 : 사진 이름 오름차순, 위도 오름차순, 경도 오름차순, 접수 날짜 오름차순/내림차순
+		// 맵 사용
+		int ans;
+		output << "\n접수된 모든 민원을 조회합니다. 정렬 기준을 숫자로 선택해 주세요.\n1. 사진 이름\n2. 위도\n3. 경도\n4. 접수 일자 오름차순\n5. 접수 일자 내림차순\n";
+		input >> ans;
+
+		switch (ans) {
+		case 1: output << "선택한 값은 '1. 사진 이름'입니다.\n"; view_all(map_comp); break;
+		case 2: output << "선택한 값은 '2. 위도'입니다.\n"; view_all(map_latitude, 1); break;
+		case 3: output << "선택한 값은 '3. 경도'입니다.\n"; view_all(map_longitude, 2); break;
+		case 4: output << "선택한 값은 '4. 접수 일자 오름차순'입니다.\n"; view_all(map_cdate_front); break;
+		case 5: output << "선택한 값은 '5. 접수 일자 내림차순'입니다.\n"; view_all(map_cdate_back); break;
+		default: output << "잘못된 입력입니다. 조회를 종료합니다.\n";
+		}
+
+		return;
+	}
+
+	/*// 우선순위 최하위. 구현하지 않을 가능성 높음
+	// 미확인
+	// 검색 기준(search_by)에 따른 특정 민원 검색
+	void search_compl() {
+		// 가능한 검색 기준 : 사진 이름(오타 불허), 위도, 경도, 접수 날짜
+		// 벡터 정렬 후 순회
+		return;
+	}
+	*/
+
+	// 정상 실행 확인
+	// 특정 분류의 쓰레기 관련 민원 일괄 처리 : 처리 후 전체 민원 벡터나 다른 맵 등에서 NULL을 제거하는 과정이 필요함
+	void clear_compls() {
+		output << "\n누적 민원 처리를 요청합니다. 처리할 쓰레기 코드를 숫자로 입력해 주세요.\n0. 일반\n1. 플라스틱\n2. 캔\n3. 유리\n4. 종이\n";
+		int code;
+		input >> code;
+		clear_compls(code);
 		return;
 	}
 
@@ -749,4 +761,8 @@ public:
 		
 		return;
 	}
+
+	// 미구현
+	// 승인 대기 목록을 확인하고 관할 구역에 속하는 민원을 추가 접수함
+	void check_waiting();
 };
