@@ -1,6 +1,8 @@
 // https://www.programiz.com/dsa/bellman-ford-algorithm
 // Bellman Ford Algorithm in C++
 
+// 알고리즘은 맞는데 배열 크기가 변수로 선언되어서 실행 불가
+
 #include <bits/stdc++.h>
 
 // Struct for the edges of the graph

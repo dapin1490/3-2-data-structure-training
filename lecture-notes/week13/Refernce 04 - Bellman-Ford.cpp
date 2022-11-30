@@ -40,7 +40,7 @@ bool ReadTestCase(string filename, int& N, vector<Edge>& edges) {
 			case 'S': next = i + N; break;
 			case 'W': next = i - 1; break;
 			}
-
+			// edges.push_back(Edge{i, next, -directions}); // 내가 추가했음 확인 필요
 		}
 	}
 	return true;
