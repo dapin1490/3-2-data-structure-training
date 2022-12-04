@@ -134,13 +134,15 @@ public:
 		next_visit.push(make_pair(s, d[s]));
 
 		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
-			visited[vert] = true; // 정점 방문
-			vector<Edge<T>> v_edge = edges_from(vert); // 지금 방문한 정점에 연결된 간선들 가져오기
+			if (!visited[vert]) {
+				visited[vert] = true; // 정점 방문
+				vector<Edge<T>> v_edge = edges_from(vert); // 지금 방문한 정점에 연결된 간선들 가져오기
 
-			for (auto& e : v_edge) {
-				if (d[vert] + e.w < d[e.to]) { // 거리를 업데이트할 필요가 있을 때에만
-					d[e.to] = d[vert] + e.w; // 거리 업데이트
-					next_visit.push(make_pair(e.to, d[e.to])); // 다음 방문 정점 큐에 추가
+				for (auto& e : v_edge) {
+					if (d[vert] + e.w < d[e.to]) { // 거리를 업데이트할 필요가 있을 때에만
+						d[e.to] = d[vert] + e.w; // 거리 업데이트
+						next_visit.push(make_pair(e.to, d[e.to])); // 다음 방문 정점 큐에 추가
+					}
 				}
 			}
 
@@ -166,14 +168,16 @@ public:
 		next_visit.push(make_pair(s, d[s].first));
 
 		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
-			visited[vert] = true; // 정점 방문
-			vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
+			if (!visited[vert]) {
+				visited[vert] = true; // 정점 방문
+				vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
 
-			for (auto& e : v_edge) {
-				if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
-					d[e.to].first = d[vert].first + e.w; // 거리 업데이트
-					d[e.to].second = vert; // 직전 방문 정점 업데이트
-					next_visit.push(make_pair(e.to, d[e.to].first));
+				for (auto& e : v_edge) {
+					if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
+						d[e.to].first = d[vert].first + e.w; // 거리 업데이트
+						d[e.to].second = vert; // 직전 방문 정점 업데이트
+						next_visit.push(make_pair(e.to, d[e.to].first));
+					}
 				}
 			}
 
@@ -200,14 +204,16 @@ public:
 		next_visit.push(make_pair(s, d[s].first));
 
 		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
-			visited[vert] = true; // 정점 방문
-			vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
+			if (!visited[vert]) {
+				visited[vert] = true; // 정점 방문
+				vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
 
-			for (auto& e : v_edge) {
-				if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
-					d[e.to].first = d[vert].first + e.w; // 거리 업데이트
-					d[e.to].second = vert; // 직전 방문 정점 업데이트
-					next_visit.push(make_pair(e.to, d[e.to].first));
+				for (auto& e : v_edge) {
+					if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
+						d[e.to].first = d[vert].first + e.w; // 거리 업데이트
+						d[e.to].second = vert; // 직전 방문 정점 업데이트
+						next_visit.push(make_pair(e.to, d[e.to].first));
+					}
 				}
 			}
 
