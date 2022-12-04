@@ -5,7 +5,7 @@
 #include <vector>
 #include <queue>
 #include <list>
-#include <limits>
+#include <climits>
 #include <algorithm>
 using namespace std;
 
@@ -118,8 +118,9 @@ public:
 
 	// 기본 : 시작점으로부터의 최소 거리만 구하는 다익스트라
 	auto dijkstra(unsigned s) { // s는 시작점
-		vector<unsigned> d(v + 1, numeric_limits<unsigned>::max()); // 저장용 거리 벡터. 정점 번호가 1부터 시작함
+		vector<unsigned> d(v + 1, INT_MAX); // 저장용 거리 벡터. 정점 번호가 1부터 시작함
 		vector<bool> visited(v + 1, false); // 방문 여부 초기화
+		priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
 
 		unsigned vert = s; // 이제 방문할 정점 : 아직 시작하지 않았으므로 시작점으로 초기화
 		visited[0] = true; // 안 쓰는 인덱스 방문할 일 없게 미리 표시
@@ -130,25 +131,22 @@ public:
 		4. 반복
 		*/
 		d[s] = 0; // 시작점은 거리 0
+		next_visit.push(make_pair(s, d[s]));
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // 아직 방문하지 않은 정점이 남아있는 동안
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
-
+		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
 			visited[vert] = true; // 정점 방문
 			vector<Edge<T>> v_edge = edges_from(vert); // 지금 방문한 정점에 연결된 간선들 가져오기
 
 			for (auto& e : v_edge) {
 				if (d[vert] + e.w < d[e.to]) { // 거리를 업데이트할 필요가 있을 때에만
 					d[e.to] = d[vert] + e.w; // 거리 업데이트
+					next_visit.push(make_pair(e.to, d[e.to])); // 다음 방문 정점 큐에 추가
 				}
 			}
 
-			for (unsigned i = 1; i <= v; i++)
-				if (!visited[i])
-					next_visit.push(make_pair(i, d[i])); // 방문하지 않은 모든 정점을 우선순위 큐에 추가
-
 			if (!next_visit.empty()) {
 				pair<unsigned, unsigned> next = next_visit.top(); // (정점, 거리)
+				next_visit.pop();
 				vert = next.first;
 			}
 		}
@@ -160,13 +158,14 @@ public:
 	vector<pair<unsigned, unsigned>> dijkstra_path(unsigned s) { // s는 시작점
 		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // 저장용 거리 벡터. 정점 번호가 1부터 시작함. (최소 비용 거리, 직전 경로 정점)
 		vector<bool> visited(v + 1, false); // 방문 여부 초기화
+		priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
+
 		unsigned vert = s; // 이제 방문할 정점 : 아직 시작하지 않았으므로 시작점으로 초기화
 		visited[0] = true; // 안 쓰는 인덱스 방문할 일 없게 미리 표시
 		d[s].first = 0; // 시작점은 거리 0
+		next_visit.push(make_pair(s, d[s].first));
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // 아직 방문하지 않은 정점이 남아있는 동안
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
-
+		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
 			visited[vert] = true; // 정점 방문
 			vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
 
@@ -174,15 +173,13 @@ public:
 				if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
 					d[e.to].first = d[vert].first + e.w; // 거리 업데이트
 					d[e.to].second = vert; // 직전 방문 정점 업데이트
+					next_visit.push(make_pair(e.to, d[e.to].first));
 				}
 			}
 
-			for (unsigned i = 1; i <= v; i++)
-				if (!visited[i])
-					next_visit.push(make_pair(i, d[i].first)); // 방문하지 않은 모든 정점을 우선순위 큐에 추가
-
 			if (!next_visit.empty()) {
 				pair<unsigned, unsigned> next = next_visit.top(); // (정점, 거리)
+				next_visit.pop();
 				vert = next.first;
 			}
 		}
@@ -194,14 +191,15 @@ public:
 	vector<pair<unsigned, list<unsigned>>> dijkstra_fullpath(unsigned s) { // s는 시작점
 		vector<pair<unsigned, unsigned>> d(v + 1, make_pair(numeric_limits<unsigned>::max(), s)); // 저장용 거리 벡터. 정점 번호가 1부터 시작함. (최소 비용 거리, 직전 경로 정점)
 		vector<bool> visited(v + 1, false); // 방문 여부 초기화
+		priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
 		vector<pair<unsigned, list<unsigned>>> full_path(v + 1); // 모든 경로 표시 벡터 : (거리, 경로)
+
 		unsigned vert = s; // 이제 방문할 정점 : 아직 시작하지 않았으므로 시작점으로 초기화
 		visited[0] = true; // 안 쓰는 인덱스 방문할 일 없게 미리 표시
 		d[s].first = 0; // 시작점은 거리 0
+		next_visit.push(make_pair(s, d[s].first));
 
-		while (find(visited.begin(), visited.end(), false) != visited.end()) { // 아직 방문하지 않은 정점이 남아있는 동안
-			priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, cmp> next_visit; // 다음에 방문할 정점 : (정점, 거리)
-
+		while (!next_visit.empty()) { // 다음 방문 정점 큐가 비어있지 않을 동안
 			visited[vert] = true; // 정점 방문
 			vector<Edge<T>> v_edge = edges_from(vert); // 정점에 연결된 간선 가져오기
 
@@ -209,15 +207,13 @@ public:
 				if (d[vert].first + e.w < d[e.to].first) { // 거리를 업데이트할 필요가 있을 때에만
 					d[e.to].first = d[vert].first + e.w; // 거리 업데이트
 					d[e.to].second = vert; // 직전 방문 정점 업데이트
+					next_visit.push(make_pair(e.to, d[e.to].first));
 				}
 			}
 
-			for (unsigned i = 1; i <= v; i++)
-				if (!visited[i])
-					next_visit.push(make_pair(i, d[i].first)); // 방문하지 않은 모든 정점을 우선순위 큐에 추가
-
 			if (!next_visit.empty()) {
 				pair<unsigned, unsigned> next = next_visit.top(); // (정점, 거리)
+				next_visit.pop();
 				vert = next.first;
 			}
 		}
